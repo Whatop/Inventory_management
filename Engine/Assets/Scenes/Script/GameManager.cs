@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
     public GameObject[] CheckBoxs ;
     [SerializeField]
     private Dropdown dropdown;
+
+    public GameObject[] AB;
+    
     public static GameManager Instance
     {
         get
@@ -102,9 +105,15 @@ public class GameManager : MonoBehaviour
         {
             CheckBoxs[i].SetActive(false);
         }
+        Invoke("Init", 1f);
     }
 
+    private void Init()
+    {
+        ResetData();
+        ScrollViewController.Instance.AllSearch();
 
+    }
 
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
@@ -354,8 +363,8 @@ public class GameManager : MonoBehaviour
         form.AddField("order", "register");
         form.AddField("date", Date);
         form.AddField("subject", SubjectName);
-        form.AddField("release", Release);
-        form.AddField("receiving", Receiving);
+        form.AddField("release", Receiving);
+        form.AddField("receiving", Release);
         form.AddField("companyName", CompanyName);
         form.AddField("rtime", ReceivingTime);
 
@@ -401,10 +410,14 @@ public class GameManager : MonoBehaviour
     {
         if (isCompanyName) {
             text1.text = "회사";
+            AB[1].SetActive(true);
+            AB[0].SetActive(false);
         }
         else
         {
             text1.text = "회수";
+            AB[0].SetActive(true);
+            AB[1].SetActive(false);
         }
         if (Application.platform == RuntimePlatform.Android)
         {

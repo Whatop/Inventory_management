@@ -234,7 +234,7 @@ public class ScrollViewController : MonoBehaviour
 		int count = gameManager.ProductSearch();
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++) {
-			SpawnFromPool("Subject", transform.position);
+			SpawnFromPool("MSubject", transform.position);
 			
 		}
 		Inquiry();
@@ -271,7 +271,7 @@ public class ScrollViewController : MonoBehaviour
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++)
 		{
-			SpawnFromPool("Subject", transform.position);
+			SpawnFromPool("MSubject", transform.position);
 
 		}
 		Inquiry();
