@@ -196,14 +196,7 @@ public class ScrollViewController : MonoBehaviour
 
 	public void Init()
     {
-		ResetId();
-		int count = gameManager.MyCompanyDatabase.Count;
-		for (int i = 0; i < count; i++)
-		{
-			if(count < 50)
-			SpawnFromPool("Subject", transform.position);
-		}
-		Inquiry();
+		AllSearch();
 	}
 
 	//검색후 그 검색 양만큼 저거되도록 변경
@@ -267,12 +260,11 @@ public class ScrollViewController : MonoBehaviour
 		{
 			uiObjects[i].gameObject.SetActive(false);
 		}
-		int count = gameManager.MyCompanyDatabase.Count;
+		int count = gameManager.GetSeachResult();
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++)
 		{
 			SpawnFromPool("MSubject", transform.position);
-
 		}
 		Inquiry();
 	}

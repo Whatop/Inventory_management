@@ -10,12 +10,12 @@ using System;
 [System.Serializable]
 public class CompanyList
 {
-    public CompanyList(string _Date, string _SubjectName, string _Receiving, string _Release,  string _CompanyName, string _Time)
-    { Date = _Date; SubjectName = _SubjectName; Receiving = _Receiving; Release = _Release;  CompanyName = _CompanyName; ReceivingTime = _Time; }
+    public CompanyList(string _Date, string _SubjectName, string _Receiving, string _Release, string _CompanyName, string _Time)
+    { Date = _Date; SubjectName = _SubjectName; Receiving = _Receiving; Release = _Release; CompanyName = _CompanyName; ReceivingTime = _Time; }
 
     //재고 이동(++날짜 , 회사명, 시간,
 
-    public string Date, SubjectName = "None", Receiving = "0", Release = "0",  CompanyName = "None", ReceivingTime = "";
+    public string Date, SubjectName = "None", Receiving = "0", Release = "0", CompanyName = "None", ReceivingTime = "";
 }
 
 
@@ -51,12 +51,13 @@ public class GameManager : MonoBehaviour
     private bool subfirst = false;
 
     public TextMeshProUGUI AllCount;
-    public GameObject[] CheckBoxs ;
+    public GameObject[] CheckBoxs;
     [SerializeField]
     private Dropdown dropdown;
 
     public GameObject[] AB;
-    
+
+    public int SeachIndex = 1;
     public static GameManager Instance
     {
         get
@@ -83,7 +84,7 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-		isCompanyName = true;
+        isCompanyName = true;
         subfirst = true;
         for (int i = 0; i < Scenes.Length; i++)
         {
@@ -100,27 +101,34 @@ public class GameManager : MonoBehaviour
         ReceivingTime = TimeInput.text;
         StartCoroutine(Lookup());
         Load();
-        AllSubjectCountText.text = "[" + MyCompanyDatabase.Count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
-        for(int i = 0; i < CheckBoxs.Length; i++)
+        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + GetSeachResult() + "]";
+        for (int i = 0; i < CheckBoxs.Length; i++)
         {
             CheckBoxs[i].SetActive(false);
         }
-        Invoke("Init", 1f);
     }
 
-    private void Init()
+    public int GetSeachResult()
     {
-        ResetData();
-        ScrollViewController.Instance.AllSearch();
 
+        int result = MyCompanyDatabase.Count;
+
+        if(MyCompanyDatabase.Count >= 50)
+        {
+            if(MyCompanyDatabase.Count > SeachIndex * 50)
+            {
+                result = SeachIndex * 50;
+            }
+        }
+        Debug.Log(result);
+        return result;
     }
-
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
         dropdown.value = index;
         CompanyType = index;
         if (index == 1)
-        {
+        { 
             AllCount.text = "잔고";
         }
     }
@@ -128,21 +136,21 @@ public class GameManager : MonoBehaviour
     {
         DateInput.text = DateTime.Now.ToString("M/d");
         TimeInput.text = DateTime.Now.ToString("t");
-        AllSubjectCountText.text = "[" + MyCompanyDatabase.Count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + GetSeachResult() + "]";
         SubjectInput.text = "";
         ReleaseInput.text = "";
         ReceivingInput.text = "";
         CompanyNameInput.text = "";
         AllCount.text = "잔고";
-        if(Time.frameCount % 30 == 0)
-{
+        if (Time.frameCount % 30 == 0)
+        {
             System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
         }
-		isCompanyName = true;
+        isCompanyName = true;
     }
     public void CheckBoxF(int a)
     {
-            CheckBoxs[a].SetActive(false);
+        CheckBoxs[a].SetActive(false);
     }
     public void CheckBoxT(int a)
     {
@@ -217,7 +225,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
 
         return count;
     }
@@ -228,15 +236,15 @@ public class GameManager : MonoBehaviour
         OnDropdownEvent(0);
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            if (MyCompanyDatabase[i].SubjectName.Trim().Contains(text.Trim()))
             {
-                if (MyCompanyDatabase[i].SubjectName.Trim().Contains(text.Trim()))
-                {
-                    MySearchData.Add(MyCompanyDatabase[i]);
-                    count++;
-                }
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
             }
+        }
         SubjectNameSearch.text = text.Trim();
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
         int dex = 0;
         for (int i = 0; i < count; i++)
         {
@@ -261,7 +269,7 @@ public class GameManager : MonoBehaviour
             }
         }
         SubjectNameSearch.text = text.Trim();
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
         int dex = 0;
         for (int i = 0; i < count; i++)
         {
@@ -275,9 +283,9 @@ public class GameManager : MonoBehaviour
     public int GetSubjectRemaining(int id)
     {
         int dex = 0;
-        for(int i = 0; i <= id; i++)
+        for (int i = 0; i <= id; i++)
         {
-            if(MySearchData[id].SubjectName.Trim() == MySearchData[i].SubjectName.Trim())
+            if (MySearchData[id].SubjectName.Trim() == MySearchData[i].SubjectName.Trim())
             {
                 MySearchData[i].Release.Replace(",", "");
                 MySearchData[i].Receiving.Replace(",", "");
@@ -292,13 +300,14 @@ public class GameManager : MonoBehaviour
     public string[] AllGetSearch(int id)
     {
         string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
+        int a = MyCompanyDatabase.Count - 1;
 
-        jdata[0] = MyCompanyDatabase[id].Date;
-        jdata[1] = MyCompanyDatabase[id].SubjectName;
-        jdata[2] = MyCompanyDatabase[id].Release;
-        jdata[3] = MyCompanyDatabase[id].Receiving;
-        jdata[4] = MyCompanyDatabase[id].CompanyName;
-        jdata[6] = MyCompanyDatabase[id].ReceivingTime;
+        jdata[0] = MyCompanyDatabase[a - id].Date;
+        jdata[1] = MyCompanyDatabase[a - id].SubjectName;
+        jdata[2] = MyCompanyDatabase[a - id].Release;
+        jdata[3] = MyCompanyDatabase[a - id].Receiving;
+        jdata[4] = MyCompanyDatabase[a - id].CompanyName;
+        jdata[6] = MyCompanyDatabase[a - id].ReceivingTime;
 
         return jdata;
     }
@@ -306,12 +315,14 @@ public class GameManager : MonoBehaviour
     {
         string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
 
-        jdata[0] = MySearchData[id].Date;
-        jdata[1] = MySearchData[id].SubjectName;
-        jdata[2] = MySearchData[id].Release;
-        jdata[3] = MySearchData[id].Receiving;
-        jdata[4] = MySearchData[id].CompanyName;
-        jdata[6] = MySearchData[id].ReceivingTime;
+        int a = MySearchData.Count - 1;
+
+        jdata[0] = MySearchData[a - id].Date;
+        jdata[1] = MySearchData[a - id].SubjectName;
+        jdata[2] = MySearchData[a - id].Release;
+        jdata[3] = MySearchData[a - id].Receiving;
+        jdata[4] = MySearchData[a - id].CompanyName;
+        jdata[6] = MySearchData[a - id].ReceivingTime;
 
         return jdata;
     }
@@ -408,7 +419,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (isCompanyName) {
+        if (isCompanyName)
+        {
             text1.text = "회사";
             AB[1].SetActive(true);
             AB[0].SetActive(false);
