@@ -8,6 +8,7 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
+    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.IK.Runtime.dll:
     - UnityEditor.U2D.IK.IKEditorManagerHelper
     Unity.2D.Tilemap.Editor.dll:
@@ -66,53 +67,53 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1464}
+      Script: {instanceID: 1462}
     - Class: 114
-      Script: {instanceID: 1548}
+      Script: {instanceID: 1542}
     - Class: 114
-      Script: {instanceID: 1628}
+      Script: {instanceID: 1622}
     - Class: 114
-      Script: {instanceID: 1640}
+      Script: {instanceID: 1634}
     - Class: 114
-      Script: {instanceID: 1786}
+      Script: {instanceID: 1780}
     - Class: 114
-      Script: {instanceID: 2096}
+      Script: {instanceID: 2080}
     - Class: 114
-      Script: {instanceID: 2104}
+      Script: {instanceID: 2088}
     - Class: 114
-      Script: {instanceID: 2268}
+      Script: {instanceID: 2250}
     - Class: 114
-      Script: {instanceID: 2476}
+      Script: {instanceID: 2452}
     - Class: 114
-      Script: {instanceID: 2622}
+      Script: {instanceID: 2594}
     - Class: 114
-      Script: {instanceID: 2666}
+      Script: {instanceID: 2636}
     - Class: 114
-      Script: {instanceID: 2794}
+      Script: {instanceID: 2762}
     - Class: 114
-      Script: {instanceID: 2844}
+      Script: {instanceID: 2812}
     - Class: 114
-      Script: {instanceID: 3008}
+      Script: {instanceID: 2974}
     - Class: 114
-      Script: {instanceID: 3016}
+      Script: {instanceID: 2982}
     - Class: 114
-      Script: {instanceID: 3110}
+      Script: {instanceID: 3074}
     - Class: 114
-      Script: {instanceID: 3688}
+      Script: {instanceID: 3636}
     - Class: 114
-      Script: {instanceID: 3806}
+      Script: {instanceID: 3744}
     - Class: 114
-      Script: {instanceID: 3972}
+      Script: {instanceID: 3906}
     - Class: 114
-      Script: {instanceID: 4152}
+      Script: {instanceID: 4080}
     - Class: 114
-      Script: {instanceID: 4220}
+      Script: {instanceID: 4148}
     - Class: 114
-      Script: {instanceID: 4232}
+      Script: {instanceID: 4158}
     - Class: 114
-      Script: {instanceID: 4252}
+      Script: {instanceID: 4178}
     - Class: 114
-      Script: {instanceID: 4584}
+      Script: {instanceID: 4502}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -500,7 +501,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: c63088735229c5905cd753f52d7ae8a5
+      Hash: cd82f3080083367c9d89c5704f6c2476
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -699,4 +700,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/ymca3/Downloads/Hyunjin.apk
+  playerPath: C:/Users/MSI/Downloads/SAMPLE-1.apk

@@ -14,7 +14,9 @@ public class Subject : MonoBehaviour
     [SerializeField]
     private int myId;
 
+
     bool First = false;
+
 
     private void OnDisable()
     {
@@ -24,49 +26,52 @@ public class Subject : MonoBehaviour
 
         ScrollViewController.ReturnToPool(gameObject);
         First = true;
+
     }
     private void OnEnable()
     {
-        if (GameManager.Instance.MySearchData.Count != 0)
+        if (!ScrollViewController.Instance.dont)
         {
-            myId = ScrollViewController.Instance.GetId();
-            string[] searchSubject = GameManager.Instance.GetSearch(myId);
-            SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
-            SubjectName.text = searchSubject[1].Trim();
-            SubjectRelease.text = searchSubject[2].Trim();
-            SubjectReceiving.text = searchSubject[3].Trim();
-            if (GameManager.Instance.CompanyType == 0)
+            if (GameManager.Instance.MySearchData.Count != 0)
             {
+                myId = ScrollViewController.Instance.GetId();
+                string[] searchSubject = GameManager.Instance.GetSearch(myId);
+                SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
+                SubjectName.text = searchSubject[1].Trim();
+                SubjectRelease.text = searchSubject[3].Trim();
+                SubjectReceiving.text = searchSubject[2].Trim();
+                if (GameManager.Instance.CompanyType == 0)
+                {
 
-                Remaining.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
+                    Remaining.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
+                    //if (GameManager.Instance.isCompanyName)
+                    //{
+                    //    Remaining.text = "";
+                    //}
+                }
+            }
+            else
+            {
+                if (First)
+                    myId = ScrollViewController.Instance.GetId();
+                string[] AllsearchSubject = GameManager.Instance.AllGetSearch(myId);
+                SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
+                SubjectName.text = AllsearchSubject[1].Trim();
+                SubjectRelease.text = AllsearchSubject[3].Trim();
+                SubjectReceiving.text = AllsearchSubject[2].Trim();
+                Remaining.text = AllsearchSubject[4].Trim();
                 //if (GameManager.Instance.isCompanyName)
                 //{
                 //    Remaining.text = "";
                 //}
             }
         }
-        else
-        {
-            if (First)
-                myId = ScrollViewController.Instance.GetId();
-            string[] AllsearchSubject = GameManager.Instance.AllGetSearch(myId);
-            SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
-            SubjectName.text = AllsearchSubject[1].Trim();
-            SubjectRelease.text = AllsearchSubject[2].Trim();
-            SubjectReceiving.text = AllsearchSubject[3].Trim();
-            Remaining.text = AllsearchSubject[4].Trim();
-            //if (GameManager.Instance.isCompanyName)
-            //{
-            //    Remaining.text = "";
-            //}
-        }
-
     }
+
         
         void DeactiveDelay() => gameObject.SetActive(false);
-
     public void SearchButton(Text text)
     {
-        ScrollViewController.Instance.TextSearch(text);
+        ScrollViewController.Instance.ReTextSearch(text);
     }
 }
