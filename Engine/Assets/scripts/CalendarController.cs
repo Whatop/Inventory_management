@@ -67,7 +67,7 @@ public class CalendarController : MonoBehaviour
                 }
             }
         }
-        _yearNumText.text = _dateTime.Year.ToString();
+        _yearNumText.text = _dateTime.ToString("yy");
         _monthNumText.text = _dateTime.Month.ToString("D2");
     }
 
