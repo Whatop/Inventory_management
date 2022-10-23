@@ -11493,6 +11493,47 @@ IL2CPP_EXTERN_C  DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405  DateTime_Ad
 	_returnValue = DateTime_AddYears_m9F1541DE0F82F1278ECC5216337FD3263A279695(_thisAdjusted, ___value0, method);
 	return _returnValue;
 }
+// System.Int32 System.DateTime::Compare(System.DateTime,System.DateTime)
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t DateTime_Compare_m1A3C6A911C83ED8490F5F39EE18F78979002063A (DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405  ___t10, DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405  ___t21, const RuntimeMethod* method)
+{
+	int64_t V_0 = 0;
+	int64_t V_1 = 0;
+	{
+		int64_t L_0;
+		L_0 = DateTime_get_InternalTicks_mCFC896BACE13EE3E20CF7AC035040F00F7CEF55B((DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405 *)(&___t10), /*hidden argument*/NULL);
+		V_0 = L_0;
+		int64_t L_1;
+		L_1 = DateTime_get_InternalTicks_mCFC896BACE13EE3E20CF7AC035040F00F7CEF55B((DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405 *)(&___t21), /*hidden argument*/NULL);
+		V_1 = L_1;
+		int64_t L_2 = V_0;
+		int64_t L_3 = V_1;
+		if ((((int64_t)L_2) <= ((int64_t)L_3)))
+		{
+			goto IL_0016;
+		}
+	}
+	{
+		return 1;
+	}
+
+IL_0016:
+	{
+		int64_t L_4 = V_0;
+		int64_t L_5 = V_1;
+		if ((((int64_t)L_4) >= ((int64_t)L_5)))
+		{
+			goto IL_001c;
+		}
+	}
+	{
+		return (-1);
+	}
+
+IL_001c:
+	{
+		return 0;
+	}
+}
 // System.Int32 System.DateTime::CompareTo(System.Object)
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t DateTime_CompareTo_m66588256B482E2F950FBD50776A4AC68483A1EE2 (DateTime_tEAF2CD16E071DF5441F40822E4CFE880E5245405 * __this, RuntimeObject * ___value0, const RuntimeMethod* method)
 {

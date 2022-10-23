@@ -11,6 +11,9 @@ public class Subject : MonoBehaviour
     public Text SubjectReceiving;
     public Text Remaining;
 
+    //  1 : UP 출고 파랑
+    //  2 : DOWN 입고 빨강
+    public Image image;
     public Sprite[] Sprites;
     [SerializeField]
     private int myId;
@@ -39,28 +42,72 @@ public class Subject : MonoBehaviour
                 string[] searchSubject = GameManager.Instance.GetSearch(myId);
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = searchSubject[1].Trim();
-                SubjectRelease.text = searchSubject[3].Trim();
-                SubjectReceiving.text = searchSubject[2].Trim();
+               // SubjectRelease.text = searchSubject[3].Trim();
+               // SubjectReceiving.text = searchSubject[2].Trim();
                 if (GameManager.Instance.CompanyType == 0)
                 {
 
-                    Remaining.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
+                    // 
+                    GameManager.Instance.GetSubjectRemaining(myId).ToString();
                     //if (GameManager.Instance.isCompanyName)
                     //{
                     //    Remaining.text = "";
                     //}
                 }
+                if (int.Parse(searchSubject[3].Trim()) > 0)
+                {
+                    image.sprite = Sprites[0];
+                    image.color = Color.blue;
+                    SubjectRelease.color = Color.blue;
+                    SubjectRelease.text = "출고";
+                    Remaining.text = searchSubject[3].Trim();
+                    Remaining.color = Color.blue;
+
+                }
+                if (int.Parse(searchSubject[2].Trim()) > 0)
+                {
+                    image.sprite = Sprites[1];
+                    image.color = Color.red;
+                    SubjectRelease.color = Color.red;
+                    SubjectRelease.text = "입고";
+                    Remaining.text = searchSubject[2].Trim();
+                    Remaining.color = Color.red; 
+                }
             }
             else
             {
+              
                 if (First)
                     myId = ScrollViewController.Instance.GetId();
                 string[] AllsearchSubject = GameManager.Instance.AllGetSearch(myId);
                 SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = AllsearchSubject[1].Trim();
-                SubjectRelease.text = AllsearchSubject[3].Trim();
-                SubjectReceiving.text = AllsearchSubject[2].Trim();
-                Remaining.text = AllsearchSubject[4].Trim();
+                //SubjectRelease.text = AllsearchSubject[3].Trim(); // 출고 
+                //SubjectReceiving.text = AllsearchSubject[2].Trim(); // 입고
+                //Remaining.text = AllsearchSubject[4].Trim();
+
+                //  0 : UP 출고 파랑
+                //  1 : DOWN 입고 빨강
+
+                if (int.Parse(AllsearchSubject[3].Trim()) > 0)
+                {
+                    image.sprite = Sprites[0];
+                    image.color = Color.blue;
+                    SubjectRelease.color = Color.blue;
+                    SubjectRelease.text = "출고";
+                    Remaining.text = AllsearchSubject[3].Trim();
+                    Remaining.color = Color.blue;
+
+                }
+                else if (int.Parse(AllsearchSubject[2].Trim()) > 0)
+                {
+                    image.sprite = Sprites[1];
+                    image.color = Color.red;
+                    SubjectRelease.color = Color.red;
+                    SubjectRelease.text = "입고";
+                    Remaining.text = AllsearchSubject[2].Trim();
+                    Remaining.color = Color.red;
+                }
                 //if (GameManager.Instance.isCompanyName)
                 //{
                 //    Remaining.text = "";

@@ -1550,18 +1550,20 @@ IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2502[2];
 IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2503[6];
 IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2504[5];
 IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2505[4];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2506[33];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2507[3];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2508[1];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2509[2];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2510[1];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2506[34];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2508[3];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2509[1];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2510[2];
 IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2511[1];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2512[11];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2513[2];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2514[7];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2515[9];
-IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2516[4];
-IL2CPP_EXTERN_C_CONST int32_t* g_FieldOffsetTable[2517] = 
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2512[1];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2513[12];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2514[2];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2515[4];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2516[9];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2517[9];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2518[3];
+IL2CPP_EXTERN_C_CONST int32_t g_FieldOffsetTable2519[11];
+IL2CPP_EXTERN_C_CONST int32_t* g_FieldOffsetTable[2521] = 
 {
 	NULL,
 	NULL,
@@ -4070,7 +4072,7 @@ IL2CPP_EXTERN_C_CONST int32_t* g_FieldOffsetTable[2517] =
 	g_FieldOffsetTable2504,
 	g_FieldOffsetTable2505,
 	g_FieldOffsetTable2506,
-	g_FieldOffsetTable2507,
+	NULL,
 	g_FieldOffsetTable2508,
 	g_FieldOffsetTable2509,
 	g_FieldOffsetTable2510,
@@ -4080,4 +4082,8 @@ IL2CPP_EXTERN_C_CONST int32_t* g_FieldOffsetTable[2517] =
 	g_FieldOffsetTable2514,
 	g_FieldOffsetTable2515,
 	g_FieldOffsetTable2516,
+	g_FieldOffsetTable2517,
+	g_FieldOffsetTable2518,
+	g_FieldOffsetTable2519,
+	NULL,
 };
