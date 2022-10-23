@@ -298,10 +298,6 @@ public class ScrollViewController : MonoBehaviour
 			uiObjects[i].gameObject.SetActive(false);
 		}
 		dont = false;
-		for (int i = 0; i < uiObjects.Count; i++)
-		{
-			uiObjects[i].gameObject.SetActive(false);
-		}
 		int count = gameManager.GetSeachResult();
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++)

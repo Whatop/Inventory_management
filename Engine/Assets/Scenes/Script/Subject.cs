@@ -11,6 +11,7 @@ public class Subject : MonoBehaviour
     public Text SubjectReceiving;
     public Text Remaining;
 
+    public Sprite[] Sprites;
     [SerializeField]
     private int myId;
 

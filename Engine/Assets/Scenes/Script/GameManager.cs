@@ -47,6 +47,7 @@ public class GameManager : MonoBehaviour
     public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput, CompanyNameInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime;
 
+    DateTime _dateTime;
     public int CompanyType;
     public TextMeshProUGUI AllSubjectCountText;
     private bool subfirst = false;
@@ -117,9 +118,9 @@ public class GameManager : MonoBehaviour
 
     public int GetSeachResult()
     {
+       // DayRemove();
 
         int result = MyCompanyDatabase.Count;
-
         if (result >= 50)
         {
             if (result > SeachIndex * 50)
@@ -248,6 +249,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
         return count;
@@ -284,6 +286,7 @@ public class GameManager : MonoBehaviour
                 count++;
             }
         }
+
         SubjectNameSearch.text = text.Trim();
         AllSubjectCountText.text = "[" + count.ToString() + "/" + count.ToString() + "]";
         int dex = 0;
@@ -342,6 +345,41 @@ public class GameManager : MonoBehaviour
         jdata[6] = MyCompanyDatabase[id].ReceivingTime;
 
         return jdata;
+    }
+    public int DayRemove()
+    {
+        _dateTime = DateTime.Now;
+        int cout = 0;
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            DateTime day = Convert.ToDateTime(MyCompanyDatabase[i].Date);
+            DateTime ctext = Convert.ToDateTime(_dateTime.ToString("yy-MM-dd"));
+            DateTime dtext = Convert.ToDateTime(_dateTime.ToString("yy-MM") + "-01");
+            if (DateTime.Compare(dtext, day) < 0)
+            {
+                MyCompanyDatabase.RemoveAt(i);
+            }
+            // Ctext가 day보다 나중임
+            if (DateTime.Compare(ctext, day) > 0)
+            {
+                MyCompanyDatabase.RemoveAt(i);
+            }
+            //}
+            //for (int i = 0; i < MySearchData.Count; i++)
+            //{
+            //    DateTime day = Convert.ToDateTime(MySearchData[i].Date);
+            //    DateTime ctext = Convert.ToDateTime(_dateTime.ToString("yy-MM-dd"));
+            //    DateTime dtext = Convert.ToDateTime(_dateTime.ToString("yy-MM") + "-01");
+            //    if (DateTime.Compare(ctext, day) > 0)
+            //    {
+            //        if (DateTime.Compare(dtext, day) > 0)
+            //        {
+            //            MySearchData.RemoveAt(i);
+            //            cout++;
+            //        }
+            //    }
+        }
+        return cout;
     }
     public string[] GetSearch(int id)// Date Name Rel Rece ComName Com
     {

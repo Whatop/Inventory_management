@@ -10,6 +10,9 @@ public class CalendarController : MonoBehaviour
     public Text _yearNumText;
     public Text _monthNumText;
 
+    public Text PrevYearText;
+    public Text CurYearText;
+
     public GameObject _item;
 
     public List<GameObject> _dateItems = new List<GameObject>();
