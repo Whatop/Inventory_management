@@ -219,6 +219,7 @@ public class ScrollViewController : MonoBehaviour
 	{
 		//검색한 내용과 비교해서 
 		// 개수 생성
+		GameManager.Instance.ResetData();
 		ResetId();
 		for (int i = 0; i < uiObjects.Count; i++)
 		{

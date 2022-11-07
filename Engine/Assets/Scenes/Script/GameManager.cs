@@ -24,6 +24,14 @@ public class GameManager : MonoBehaviour
 {
     // 그냥 검색된 메서스를 넣는 변수를 만들어서 처리하기
 
+    public Image BG;
+    public Image BsG;
+    public TextMeshProUGUI TextS;
+
+
+    public Image DABG;
+    int typeDDD; // 등록 V or none
+
     public bool isCompanyName;
     static GameManager inst;
     public TextAsset SubjectDatebase;
@@ -31,6 +39,7 @@ public class GameManager : MonoBehaviour
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
 
+    public Animator animator;
 
     public string curType = "Main";
     int curInt;
@@ -41,16 +50,17 @@ public class GameManager : MonoBehaviour
     public TMP_InputField SubjectNameSearch;
     string filePath;
 
-    const string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=A2:F";//전해업체
-    const string CodeURL = "https://script.google.com/macros/s/AKfycbzPItu8K0sqevCvWmi82w8BUY-U0K2F446NmZfnZ1OLrcPwm7hotZiRRMUK81ePg3eONQ/exec";//코드
+     string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=K2:Q";//전해업체
+     string CodeURL = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
+     string CodeURLV = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
 
-    public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput, CompanyNameInput;
-    string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime;
+    public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput, CompanyNameInput, NoneInput;
+    string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
 
     DateTime _dateTime;
     public int CompanyType;
     public TextMeshProUGUI AllSubjectCountText;
-    private bool subfirst = false;
+    private bool subfirst = true;
 
     public TextMeshProUGUI AllCount;
     public GameObject[] CheckBoxs;
@@ -107,8 +117,6 @@ public class GameManager : MonoBehaviour
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         Date = DateInput.text;
         ReceivingTime = TimeInput.text;
-        StartCoroutine(Lookup());
-        Load();
         AllSubjectCountText.text = "[" + GetSeachResult() + "/" + MyCompanyDatabase.Count.ToString() + "]";
         for (int i = 0; i < CheckBoxs.Length; i++)
         {
@@ -158,13 +166,14 @@ public class GameManager : MonoBehaviour
     }
     public void ResetData()
     {
-        DateInput.text = DateTime.Now.ToString("M/d");
-        TimeInput.text = DateTime.Now.ToString("t");
+        DateInput.text = DateTime.Now.ToString("yy/M/d");
+        TimeInput.text = DateTime.Now.ToString("hh:mm");
         AllSubjectCountText.text = "[" + GetSeachResult() + "/" + MyCompanyDatabase.Count.ToString() + "]";
         SubjectInput.text = "";
         ReleaseInput.text = "";
         ReceivingInput.text = "";
         CompanyNameInput.text = "";
+        NoneInput.text = "";
         AllCount.text = "잔고";
         if (Time.frameCount % 30 == 0)
         {
@@ -182,6 +191,8 @@ public class GameManager : MonoBehaviour
     }
     public void TabClick(string tabName)
     {
+       // if (tabName == "Subject" || tabName == "Material")
+       //     animator.SetTrigger("Start");
         MySearchData.Clear();
         SubjectNameSearch.text = "";
         curType = tabName;
@@ -193,6 +204,8 @@ public class GameManager : MonoBehaviour
                 case "Main": tabNum = 0; break;
                 case "Subject": tabNum = 1; ; break;
                 case "Enrollment": tabNum = 2; break;
+                case "Enrollment2": tabNum = 2; break;
+                case "Material": tabNum = 1; break;
                 case "None": tabNum = 3; break;
             }
             for (int i = 0; i < Scenes.Length; i++)
@@ -211,16 +224,22 @@ public class GameManager : MonoBehaviour
 
         }
 
-        StartCoroutine(Lookup());
-        Load();
-        if (curType == "Subject")
+        if (curType == "Enrollment")
         {
-            ResetData();
-            if (subfirst)
-                ScrollViewController.Instance.AllSearch();
-            subfirst = true;
-
+            DABG.color = new Color(0.9150943f, 0.2495712f, 0);
+            typeDDD = 1;
         }
+        else 
+        {
+            DABG.color = new Color(0.07305086f, 0.6792453f, 0);
+            typeDDD = 2;
+        }
+
+        StartCoroutine(Lookup(curType));
+
+
+
+
     }
     public int ProductSearch()
     {
@@ -396,7 +415,7 @@ public class GameManager : MonoBehaviour
 
         return jdata;
     }
-    void Load()
+    public void Load()
     {
         MyCompanyDatabase.Clear();
         string jdata = File.ReadAllText(filePath);
@@ -404,16 +423,23 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < line.Length; i++)
         {
             string[] row = line[i].Split('\t');
-            for (int j = 0; j < 6; j++)
+            if (row.Length > 5)
             {
-                if (row[j] == "")
+                for (int j = 0; j < 6; j++)
                 {
-                    row[j] = "0";
+                    if (row[j] == "")
+                    {
+                        row[j] = "0";
+                    }
                 }
-
+                MyCompanyDatabase.Add(new CompanyList(row[0], row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], row[5]));
             }
-            MyCompanyDatabase.Add(new CompanyList(row[0], row[1], row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], row[5]));
 
+        }
+        if (curType == "Subject" || curType == "Material")
+        {
+            ResetData();
+            ScrollViewController.Instance.AllSearch();
 
         }
     }
@@ -425,8 +451,11 @@ public class GameManager : MonoBehaviour
         Release = ReleaseInput.text.Trim();
         Receiving = ReceivingInput.text.Trim();
         CompanyName = CompanyNameInput.text.Trim();
+        ReceivingTime = TimeInput.text.Trim();
+        Date = DateInput.text.Trim();
+        None = NoneInput.text.Trim();
 
-        if (SubjectName == "" || Release == "" || Receiving == "" || CompanyName == "") return false;
+        if (SubjectName == "" || Release == "" || Receiving == "" || CompanyName == "" && TimeInput.text.Length >= 4) return false;
         else return true;
     }
     public void Register() //등록
@@ -441,13 +470,18 @@ public class GameManager : MonoBehaviour
             CheckBoxs[0].SetActive(true);
         }
         WWWForm form = new WWWForm();
-        form.AddField("order", "register");
+        if(typeDDD == 1)
+             form.AddField("order", "register");
+        else
+             form.AddField("order", "registerV");
+            
         form.AddField("date", Date);
         form.AddField("subject", SubjectName);
         form.AddField("release", Release);
         form.AddField("receiving", Receiving);
         form.AddField("companyName", CompanyName);
         form.AddField("rtime", ReceivingTime);
+        form.AddField("none", None);
 
         ResetData();
 
@@ -465,18 +499,36 @@ public class GameManager : MonoBehaviour
         Load();
     }
 
-    IEnumerator Lookup()
+    IEnumerator Lookup(string curType)
     {
+        if (curType == "Subject")
+        {
+            BG.color = new Color(0.9150943f, 0.2495712f, 0);
+            BsG.color = new Color(0.9607844f, 0.3607843f, 0.1372549f);
+            TextS.text = "입출고 관리";
+           ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=K2:Q";
+
+        }
+        else
+        {
+            TextS.text = "자재";
+            BG.color = new Color(0.07305086f, 0.6792453f, 0);
+            BsG.color = new Color(0.3747597f, 0.8207547f, 0);
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=K2:Q&gid=768472277";
+        }
         UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
 
         yield return www.SendWebRequest();
 
         if (www.isDone)
+        {
             File.WriteAllText(filePath, www.downloadHandler.text);
+            Load();
+           //animator.SetTrigger("End");
+        }
 
         else print("웹의 응답이 없습니다.");
     }
-
 
     public static void Exit()
     {

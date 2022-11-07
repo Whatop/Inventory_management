@@ -48,7 +48,7 @@ public class Subject : MonoBehaviour
                 {
 
                     // 
-                    GameManager.Instance.GetSubjectRemaining(myId).ToString();
+                    SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
                     //if (GameManager.Instance.isCompanyName)
                     //{
                     //    Remaining.text = "";
@@ -88,6 +88,7 @@ public class Subject : MonoBehaviour
 
                 //  0 : UP Ãâ°í ÆÄ¶û
                 //  1 : DOWN ÀÔ°í »¡°­
+                SubjectReceiving.text = "";
 
                 if (int.Parse(AllsearchSubject[3].Trim()) > 0)
                 {
