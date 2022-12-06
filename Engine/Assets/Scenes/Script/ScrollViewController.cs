@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -36,6 +35,7 @@ public class ScrollViewController : MonoBehaviour
 	private int spId = -1;
 	public bool dont = false;
 	bool first;
+	int reveprod = 0;
 	[Serializable]
 	public class Pool
 	{
@@ -52,7 +52,7 @@ public class ScrollViewController : MonoBehaviour
 		"    CancelInvoke();    // Monobehaviour에 Invoke가 있다면 \n}";
 
 	public int GetId()
-    {
+	{
 		spId++;
 		return spId;
 	}
@@ -163,29 +163,29 @@ public class ScrollViewController : MonoBehaviour
 
 	public void Start()
 	{
-			spawnObjects = new List<GameObject>();
-			poolDictionary = new Dictionary<string, Queue<GameObject>>();
+		spawnObjects = new List<GameObject>();
+		poolDictionary = new Dictionary<string, Queue<GameObject>>();
 
-			// 미리 생성
-			foreach (Pool pool in pools)
+		// 미리 생성
+		foreach (Pool pool in pools)
+		{
+			poolDictionary.Add(pool.tag, new Queue<GameObject>());
+			for (int i = 0; i < pool.size; i++)
 			{
-				poolDictionary.Add(pool.tag, new Queue<GameObject>());
-				for (int i = 0; i < pool.size; i++)
-				{
-					var obj = CreateNewObject(pool.tag, pool.prefab);
-					ArrangePool(obj);
-				}
-
-				// OnDisable에 ReturnToPool 구현여부와 중복구현 검사
-				if (poolDictionary[pool.tag].Count <= 0)
-					Debug.LogError($"{pool.tag}{INFO}");
-				else if (poolDictionary[pool.tag].Count != pool.size)
-					Debug.LogError($"{pool.tag}에 ReturnToPool이 중복됩니다");
+				var obj = CreateNewObject(pool.tag, pool.prefab);
+				ArrangePool(obj);
 			}
+
+			// OnDisable에 ReturnToPool 구현여부와 중복구현 검사
+			if (poolDictionary[pool.tag].Count <= 0)
+				Debug.LogError($"{pool.tag}{INFO}");
+			else if (poolDictionary[pool.tag].Count != pool.size)
+				Debug.LogError($"{pool.tag}에 ReturnToPool이 중복됩니다");
+		}
 		Invoke("Init", 0.1f);
 	}
 
-    GameObject CreateNewObject(string tag, GameObject prefab)
+	GameObject CreateNewObject(string tag, GameObject prefab)
 	{
 		var obj = Instantiate(prefab, scrollRect.content).GetComponent<RectTransform>();
 		obj.name = tag;
@@ -195,14 +195,14 @@ public class ScrollViewController : MonoBehaviour
 	}
 
 	public void Init()
-    {
+	{
 		AllSearch();
 	}
 
 	//검색후 그 검색 양만큼 저거되도록 변경
 	//var bullet = ScrollViewController.SpawnFromPool<Subject>("Subject", transform.position + direction.normalized);//Instantiate(bulletPrefab, transform.position + direction.normalized, Quaternion.identity).GetComponent<Bullet>();
 	public void Inquiry() //조회
-    {
+	{
 		float y = 5f;
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
@@ -221,16 +221,25 @@ public class ScrollViewController : MonoBehaviour
 		// 개수 생성
 		GameManager.Instance.ResetData();
 		ResetId();
+		if (reveprod != 0)
+		{
+			for (int i = 0; i < GameManager.Instance.MyCompanyDatabase.Count - reveprod; i++)
+			{
+				SpawnFromPool("Subject", transform.position);
+			}
+		}
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
 			uiObjects[i].gameObject.SetActive(false);
 		}
 		int count = gameManager.ProductSearch();
 		GameManager.Instance.isCompanyName = true;
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++)
+		{
 			SpawnFromPool("Subject", transform.position);
-			
+
 		}
+		reveprod = gameManager.MySearchData.Count;
 		Inquiry();
 	}
 	public void TextSearch(Text text) //검색
@@ -238,9 +247,12 @@ public class ScrollViewController : MonoBehaviour
 		//검색한 내용과 비교해서 
 		// 개수 생성
 		ResetId();
-		for (int i = 0; i < gameManager.MyCompanyDatabase.Count - gameManager.GetIndexResult(gameManager.MySearchData.Count); i++)
+		if (reveprod != 0)
 		{
-			SpawnFromPool("Subject", transform.position);
+			for (int i = 0; i < GameManager.Instance.MyCompanyDatabase.Count - reveprod; i++)
+			{
+				SpawnFromPool("Subject", transform.position);
+			}
 		}
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
@@ -251,8 +263,9 @@ public class ScrollViewController : MonoBehaviour
 		for (int i = 0; i < count; i++)
 		{
 			SpawnFromPool("Subject", transform.position);
-			
+
 		}
+		reveprod = gameManager.MySearchData.Count;
 
 		Inquiry();
 	}
@@ -260,12 +273,15 @@ public class ScrollViewController : MonoBehaviour
 	{
 		//검색한 내용과 비교해서 
 		// 개수 생성
-		
+
 		ResetId();
 		dont = true;
-		for (int i = 0; i < gameManager.MyCompanyDatabase.Count - gameManager.GetIndexResult(gameManager.MySearchData.Count); i++)
+		if (reveprod != 0)
 		{
-			SpawnFromPool("Subject", transform.position);
+			for (int i = 0; i < GameManager.Instance.MyCompanyDatabase.Count - reveprod; i++)
+			{
+				SpawnFromPool("Subject", transform.position);
+			}
 		}
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
@@ -277,9 +293,9 @@ public class ScrollViewController : MonoBehaviour
 		for (int i = 0; i < count; i++)
 		{
 			SpawnFromPool("Subject", transform.position);
-			
-		}
 
+		}
+		reveprod = gameManager.MySearchData.Count;
 		Inquiry();
 	}
 
@@ -290,22 +306,34 @@ public class ScrollViewController : MonoBehaviour
 		ResetId();
 		dont = true;
 		int a = uiObjects.Count;
-		for (int i = 0; i < a - gameManager.GetIndexResult(gameManager.MySearchData.Count); i++)
+		if (reveprod == 0)
+			a = 0;
+		else
 		{
-			SpawnFromPool("Subject", transform.position );
+			for (int i = 0; i < GameManager.Instance.MyCompanyDatabase.Count - reveprod; i++)
+			{
+				SpawnFromPool("Subject", transform.position);
+			}
 		}
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
 			uiObjects[i].gameObject.SetActive(false);
 		}
 		dont = false;
-		int count = gameManager.GetSeachResult();
+		int count = gameManager.MyCompanyDatabase.Count;
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++)
 		{
 			SpawnFromPool("Subject", transform.position);
 		}
 		Inquiry();
+		if (!first)
+		{
+			first = true;
+			GameManager.Instance.TabClick("Subject");
+
+		}
+		reveprod = 0;
 	}
 
 
