@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
 using System;
-
+using System.Linq;
 [System.Serializable]
 public class CompanyList
 {
@@ -23,7 +23,10 @@ public class CompanyList
 public class GameManager : MonoBehaviour
 {
     // 그냥 검색된 메서스를 넣는 변수를 만들어서 처리하기
-
+    public static List<T> removeDuplicates<T>(List<T> list)
+    {
+        return new HashSet<T>(list).ToList();
+    }
 
     public bool isCompanyName;
     static GameManager inst;
@@ -31,6 +34,7 @@ public class GameManager : MonoBehaviour
 
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
+    public List<CompanyList> DoSearchData;
 
     public Animator animator;
 
@@ -58,6 +62,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Dropdown dropdown;
 
+    public bool isSubject = false;
 
     public int SeachIndex = 1;
     public static GameManager Instance
@@ -102,14 +107,14 @@ public class GameManager : MonoBehaviour
     {
         isCompanyName = true;
         subfirst = true;
-
+        isSubject = false;
         filePath = Application.persistentDataPath + "/MySubjectText.txt";
         Debug.Log(filePath);
         DateInput.text = DateTime.Now.ToString("yy-MM-dd");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         Date = DateInput.text;
         ReceivingTime = TimeInput.text;
-        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
         for (int i = 0; i < CheckBoxs.Length; i++)
         {
             CheckBoxs[i].SetActive(false);
@@ -120,7 +125,7 @@ public class GameManager : MonoBehaviour
     {
         // DayRemove();
 
-        int result = MyCompanyDatabase.Count;
+        int result = DoSearchData.Count;
         if (result >= 50)
         {
             if (result > SeachIndex * 50)
@@ -159,7 +164,7 @@ public class GameManager : MonoBehaviour
     {
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
-        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
         SubjectInput.text = "";
         ReleaseInput.text = "";
         ReceivingInput.text = "";
@@ -212,7 +217,8 @@ public class GameManager : MonoBehaviour
             }
 
         }
-
+        ScrollViewController.Instance.UIObjectReset();
+        if (curType != "Enrollment")
         StartCoroutine(Lookup(curType));
     }
     public int ProductSearch()
@@ -244,6 +250,44 @@ public class GameManager : MonoBehaviour
         }
 
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+
+        return count;
+    }
+    public int SEadSearch()
+    {
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName }).Distinct().ToList();
+        DoSearchData.Clear();
+        OnDropdownEvent(0);
+        int count = 0;
+        foreach (var obj in distPerson)
+        {
+            DoSearchData.Add(new CompanyList(count.ToString(), obj.SubjectName, "1", "1", "1", "1"));
+        }
+
+        if (CompanyType == 0)
+        {
+            for (int i = 0; i < DoSearchData.Count; i++)
+            {
+                if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+                {
+                    MySearchData.Add(DoSearchData[i]);
+                    count++;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < DoSearchData.Count; i++)
+            {
+                if (DoSearchData[i].CompanyName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+                {
+                    MySearchData.Add(DoSearchData[i]);
+                    count++;
+                }
+            }
+        }
+
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
 
         return count;
     }
@@ -289,6 +333,19 @@ public class GameManager : MonoBehaviour
             MySearchData[i].Receiving.Replace(",", "");
             dex += int.Parse(MySearchData[i].Release);
             dex -= int.Parse(MySearchData[i].Receiving);
+        }
+        return count;
+    }
+    public int ALLDOTextSearch()
+    {
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName}).Distinct().ToList();
+        DoSearchData.Clear();
+        OnDropdownEvent(0);
+        int count = 0;
+        foreach (var obj in distPerson)
+        {
+            DoSearchData.Add(new CompanyList(count.ToString(), obj.SubjectName, "1", "1", "1", "1"));
+            count++;
         }
         return count;
     }
@@ -339,6 +396,20 @@ public class GameManager : MonoBehaviour
 
         return jdata;
     }
+    public string[] DoGetSearch(int id)
+    {
+        string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
+        int a = MyCompanyDatabase.Count - 1;
+
+        jdata[0] = DoSearchData[id].Date;
+        jdata[1] = DoSearchData[id].SubjectName;
+        jdata[2] = DoSearchData[id].Release;
+        jdata[3] = DoSearchData[id].Receiving;
+        jdata[4] = DoSearchData[id].CompanyName;
+        jdata[6] = DoSearchData[id].ReceivingTime;
+
+        return jdata;
+    }
     public string[] GetSearch(int id)// Date Name Rel Rece ComName Com
     {
         string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
@@ -376,7 +447,7 @@ public class GameManager : MonoBehaviour
 
         }
         ResetData();
-        ScrollViewController.Instance.AllSearch();
+        ScrollViewController.Instance.DoSearch();
     }
 
     // 여기서 부터   
