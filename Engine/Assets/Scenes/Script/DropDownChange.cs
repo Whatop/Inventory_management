@@ -17,6 +17,6 @@ public class DropDownChange : MonoBehaviour
 
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
-        text.text = $"Dropdown Index : { index}";
+        //text.text = $"Dropdown Index : { index}";
     }
 }

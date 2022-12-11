@@ -53,7 +53,8 @@ public class GameManager : MonoBehaviour
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
 
     DateTime _dateTime;
-    public int CompanyType;
+    public int CompanyType; /// 건들면 코드 망가질수도 있음
+    public int CompanySearch;
     public TextMeshProUGUI AllSubjectCountText;
     private bool subfirst = true;
 
@@ -154,11 +155,9 @@ public class GameManager : MonoBehaviour
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
         dropdown.value = index;
-        CompanyType = index;
-        if (index == 1)
-        {
-            AllCount.text = "잔고";
-        }
+        CompanySearch = index;
+        // 전체,유진,천보,인창,청명,하나,j&f,비엘아이,한특
+
     }
     public void ResetData()
     {
@@ -221,7 +220,9 @@ public class GameManager : MonoBehaviour
         if (curType != "Enrollment")
         StartCoroutine(Lookup(curType));
     }
-    public int ProductSearch()
+    // 전체,유진,천보,인창,청명
+
+    public int ProductSearch()//
     {
         MySearchData.Clear();
 
@@ -232,32 +233,51 @@ public class GameManager : MonoBehaviour
             {
                 if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
                 {
-                    MySearchData.Add(MyCompanyDatabase[i]);
-                    count++;
+                    if (CompanySearch == 0)
+                    {
+                        MySearchData.Add(MyCompanyDatabase[i]);
+                        count++;
+                    }
+                    else
+                    {
+                        if (CompanySearch == 1 && MyCompanyDatabase[i].CompanyName == "유진")
+                        {
+                            MySearchData.Add(MyCompanyDatabase[i]);
+                            count++;
+                        }
+                        else if(CompanySearch == 2 && MyCompanyDatabase[i].CompanyName == "천보")
+                        {
+                            MySearchData.Add(MyCompanyDatabase[i]);
+                            count++;
+                        }
+                        else if (CompanySearch == 3 && MyCompanyDatabase[i].CompanyName == "인창")
+                        {
+                            MySearchData.Add(MyCompanyDatabase[i]);
+                            count++;
+                        }
+                        else if (CompanySearch == 4 && MyCompanyDatabase[i].CompanyName == "청명")
+                        {
+                            MySearchData.Add(MyCompanyDatabase[i]);
+                            count++;
+                        }
+                        else if (CompanySearch == 5 && MyCompanyDatabase[i].CompanyName == "하나")
+                        {
+                            MySearchData.Add(MyCompanyDatabase[i]);
+                            count++;
+                        }
+                    }
                 }
             }
         }
-        else
-        {
-            for (int i = 0; i < MyCompanyDatabase.Count; i++)
-            {
-                if (MyCompanyDatabase[i].CompanyName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
-                {
-                    MySearchData.Add(MyCompanyDatabase[i]);
-                    count++;
-                }
-            }
-        }
-
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
         return count;
     }
-    public int SEadSearch()
+    public int SEadSearch()//요약검색
     {
         var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName }).Distinct().ToList();
         DoSearchData.Clear();
-        OnDropdownEvent(0);
+        OnDropdownEvent(CompanySearch);
         int count = 0;
         foreach (var obj in distPerson)
         {
@@ -275,27 +295,16 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            for (int i = 0; i < DoSearchData.Count; i++)
-            {
-                if (DoSearchData[i].CompanyName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
-                {
-                    MySearchData.Add(DoSearchData[i]);
-                    count++;
-                }
-            }
-        }
 
         AllSubjectCountText.text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
 
         return count;
-    }
+    } 
 
-    public int TextSearch(String text)
+    public int TextSearch(String text) 
     {
         MySearchData.Clear();
-        OnDropdownEvent(0);
+        OnDropdownEvent(CompanySearch);
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
@@ -313,7 +322,7 @@ public class GameManager : MonoBehaviour
     public int DOTextSearch(String text)
     {
         MySearchData.Clear();
-        OnDropdownEvent(0);
+        OnDropdownEvent(CompanySearch);
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
