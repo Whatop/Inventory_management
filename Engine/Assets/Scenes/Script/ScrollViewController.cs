@@ -231,21 +231,21 @@ public class ScrollViewController : MonoBehaviour
 		// 개수 생성
 		GameManager.Instance.ResetData();
 		gameManager.isSubject = true;
-		ResetId(); 
+		ResetId();
 		dont = true;
-		if (reveprod != 0)
+		int count = gameManager.ProductSearch();
+		if (count > c - reveprod)
 		{
 			for (int i = 0; i < c - reveprod; i++)
 			{
 				SpawnFromPool("Subject", transform.position);
 			}
 		}
+		dont = false;
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
 			uiObjects[i].gameObject.SetActive(false);
 		}
-		dont = false;
-		int count = gameManager.ProductSearch();
 		GameManager.Instance.isCompanyName = true;
 		for (int i = 0; i < count; i++)
 		{
@@ -267,7 +267,8 @@ public class ScrollViewController : MonoBehaviour
 		gameManager.isSubject = true;
 		ResetId(); 
 		dont = true;
-		if (reveprod != 0)
+		int count = gameManager.ProductSearch();
+		if (count > c - reveprod)
 		{
 			for (int i = 0; i < c - reveprod; i++)
 			{
@@ -279,7 +280,6 @@ public class ScrollViewController : MonoBehaviour
 			uiObjects[i].gameObject.SetActive(false);
 		}
 		dont = false;
-		int count = gameManager.DOTextSearch(text.text.Trim());
 		GameManager.Instance.isCompanyName = false;
 		for (int i = 0; i < count; i++)
 		{
@@ -302,7 +302,8 @@ public class ScrollViewController : MonoBehaviour
 		gameManager.isSubject = true;
 		ResetId();
 		dont = true;
-		if (reveprod != 0)
+		int count = gameManager.DOTextSearch(text.text.Trim());
+		if (count > c - reveprod)
 		{
 			for (int i = 0; i < c - reveprod; i++)
 			{
@@ -314,7 +315,6 @@ public class ScrollViewController : MonoBehaviour
 			uiObjects[i].gameObject.SetActive(false);
 		}
 		dont = false;
-		int count = gameManager.DOTextSearch(text.text.Trim());
 		GameManager.Instance.isCompanyName = false;
 		for (int i = 0; i < count; i++)
 		{
