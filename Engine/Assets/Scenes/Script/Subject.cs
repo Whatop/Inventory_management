@@ -21,23 +21,19 @@ public class Subject : MonoBehaviour
 
 
     bool First = false;
-
+    bool s = false;
 
     private void OnDisable()
     {
-        ScrollViewController.Instance.ResetId();
-        if (!First)
-            myId = ScrollViewController.Instance.GetId();
-
+        myId = ScrollViewController.Instance.GetId();
         ScrollViewController.ReturnToPool(gameObject);
-        First = true;
+
 
     }
     private void OnEnable()
     {
         if (!ScrollViewController.Instance.dont)
         {
-        
             if (GameManager.Instance.MySearchData.Count != 0) 
             {
                 if (GameManager.Instance.isSubject) //검색용
@@ -48,20 +44,17 @@ public class Subject : MonoBehaviour
                 }
                 else //모든용
                 {
-                    image.gameObject.SetActive(false);
-                    SubjectDate.gameObject.SetActive(false);
                     SubjectReceiving.gameObject.SetActive(false);
                 }
-                myId = ScrollViewController.Instance.GetId();
+                    myId = ScrollViewController.Instance.GetId();
                 string[] searchSubject = GameManager.Instance.GetSearch(myId);
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = searchSubject[1].Trim();
                 
                 
-                if (GameManager.Instance.CompanyType == 0)
+                if (GameManager.Instance.isSubject)
                 {
                     SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
-                
                 }
                 //화살표
                 if (int.Parse(searchSubject[3].Trim()) > 0)
@@ -86,19 +79,15 @@ public class Subject : MonoBehaviour
                 else
                 {
                     SubjectName.color = Color.black;
-
                 }
             }
             else // --------------------- AllSearch --------------------
             {
-                if (First)
                     myId = ScrollViewController.Instance.GetId();
-
-                //체인지 테스트
+                //체인지 테스트 ;;
                 string[] AllsearchSubject = GameManager.Instance.DoGetSearch(myId);
                 SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
-                SubjectName.text = AllsearchSubject[1].Trim();
-
+               SubjectName.text = AllsearchSubject[1].Trim();
 
 
                 // COLOR
@@ -132,6 +121,7 @@ public class Subject : MonoBehaviour
         void DeactiveDelay() => gameObject.SetActive(false);
     public void SearchButton(Text text)
     {
+        if(!GameManager.Instance.isSubject)
         ScrollViewController.Instance.ReTextSearch(text);
     }
 }

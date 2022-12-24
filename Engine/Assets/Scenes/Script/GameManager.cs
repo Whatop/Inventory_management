@@ -90,6 +90,10 @@ public class GameManager : MonoBehaviour
         dropdown.onValueChanged.AddListener(OnDropdownEvent);
     }
 
+    public void Resetdropdown()
+    {
+        SubjectNameSearch.text = "";
+    }
     public void UpSeachCount()
     {
         SeachIndex++;
@@ -115,7 +119,7 @@ public class GameManager : MonoBehaviour
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         Date = DateInput.text;
         ReceivingTime = TimeInput.text;
-        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
+        AllSubjectCountText.text = "[" + DoSearchData.Count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
         for (int i = 0; i < CheckBoxs.Length; i++)
         {
             CheckBoxs[i].SetActive(false);
@@ -190,6 +194,14 @@ public class GameManager : MonoBehaviour
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
         SubjectNameSearch.text = "";
+
+        
+        if (!subfirst)
+        {
+            ScrollViewController.Instance.UIObjectReset();
+            subfirst = true;
+        }
+
         curType = tabName;
         if (tabName != "None")
         {
@@ -216,9 +228,9 @@ public class GameManager : MonoBehaviour
             }
 
         }
-        ScrollViewController.Instance.UIObjectReset();
         if (curType != "Enrollment")
-        StartCoroutine(Lookup(curType));
+             StartCoroutine(Lookup(curType));
+        
     }
     // 전체,유진,천보,인창,청명
 
@@ -227,8 +239,6 @@ public class GameManager : MonoBehaviour
         MySearchData.Clear();
 
         int count = 0;
-        if (CompanyType == 0)
-        {
             for (int i = 0; i < MyCompanyDatabase.Count; i++)
             {
                 if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
@@ -238,9 +248,8 @@ public class GameManager : MonoBehaviour
                         MySearchData.Add(MyCompanyDatabase[i]);
                         count++;
                     }
-                    else
-                    {
-                        if (CompanySearch == 1 && MyCompanyDatabase[i].CompanyName == "유진")
+                    
+                    else if(CompanySearch == 1 && MyCompanyDatabase[i].CompanyName == "유진")
                         {
                             MySearchData.Add(MyCompanyDatabase[i]);
                             count++;
@@ -265,9 +274,7 @@ public class GameManager : MonoBehaviour
                             MySearchData.Add(MyCompanyDatabase[i]);
                             count++;
                         }
-                    }
                 }
-            }
         }
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
@@ -356,6 +363,7 @@ public class GameManager : MonoBehaviour
             DoSearchData.Add(new CompanyList(count.ToString(), obj.SubjectName, "1", "1", "1", "1"));
             count++;
         }
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + count.ToString() + "]";
         return count;
     }
     public int GetSubjectRemaining(int id)
@@ -393,8 +401,7 @@ public class GameManager : MonoBehaviour
     }
     public string[] AllGetSearch(int id)
     {
-        string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
-        int a = MyCompanyDatabase.Count - 1;
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
 
         jdata[0] = MyCompanyDatabase[id].Date;
         jdata[1] = MyCompanyDatabase[id].SubjectName;
@@ -407,8 +414,8 @@ public class GameManager : MonoBehaviour
     }
     public string[] DoGetSearch(int id)
     {
-        string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
-        int a = MyCompanyDatabase.Count - 1;
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
+
 
         jdata[0] = DoSearchData[id].Date;
         jdata[1] = DoSearchData[id].SubjectName;
@@ -421,9 +428,8 @@ public class GameManager : MonoBehaviour
     }
     public string[] GetSearch(int id)// Date Name Rel Rece ComName Com
     {
-        string[] jdata = { "오류", "오류", "오류", "오류", "오류", "오류", "오류" };
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
 
-        int a = MySearchData.Count - 1;
 
         jdata[0] = MySearchData[id].Date;
         jdata[1] = MySearchData[id].SubjectName;
@@ -451,7 +457,7 @@ public class GameManager : MonoBehaviour
                         row[j] = "0";
                     }
                 }
-                MyCompanyDatabase.Add(new CompanyList(row[0], row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
+                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-","/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
             }
 
         }

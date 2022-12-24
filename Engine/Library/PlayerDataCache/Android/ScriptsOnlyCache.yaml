@@ -3,6 +3,7 @@ ScriptsOnlyBuild:
     Assembly-CSharp.dll:
     - CalendarController
     - CalendarDateItem
+    - DropDownChange
     - GameManager
     - ScrollViewController
     - Subject
@@ -31,12 +32,6 @@ ScriptsOnlyBuild:
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
     - TMPro.TextMeshProUGUI
-    UnityEditor.Graphs.dll:
-    - UnityEditor.Graphs.AnimationBlendTree.Graph
-    - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
-    - UnityEditor.Graphs.AnimationStateMachine.Graph
-    - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
-    - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -74,70 +69,68 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 49
       Script: {instanceID: 0}
-    - Class: 74
-      Script: {instanceID: 0}
-    - Class: 91
-      Script: {instanceID: 0}
     - Class: 95
       Script: {instanceID: 0}
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1462}
+      Script: {instanceID: 1468}
     - Class: 114
-      Script: {instanceID: 1542}
+      Script: {instanceID: 1548}
     - Class: 114
-      Script: {instanceID: 1622}
+      Script: {instanceID: 1628}
     - Class: 114
-      Script: {instanceID: 1634}
+      Script: {instanceID: 1640}
     - Class: 114
-      Script: {instanceID: 1692}
+      Script: {instanceID: 1696}
     - Class: 114
-      Script: {instanceID: 1782}
+      Script: {instanceID: 1786}
     - Class: 114
-      Script: {instanceID: 1968}
+      Script: {instanceID: 1972}
     - Class: 114
-      Script: {instanceID: 2016}
+      Script: {instanceID: 2020}
     - Class: 114
-      Script: {instanceID: 2086}
+      Script: {instanceID: 2090}
     - Class: 114
-      Script: {instanceID: 2094}
+      Script: {instanceID: 2100}
     - Class: 114
-      Script: {instanceID: 2256}
+      Script: {instanceID: 2262}
     - Class: 114
-      Script: {instanceID: 2434}
+      Script: {instanceID: 2440}
     - Class: 114
-      Script: {instanceID: 2460}
+      Script: {instanceID: 2466}
     - Class: 114
-      Script: {instanceID: 2602}
+      Script: {instanceID: 2608}
     - Class: 114
-      Script: {instanceID: 2644}
+      Script: {instanceID: 2650}
     - Class: 114
-      Script: {instanceID: 2770}
+      Script: {instanceID: 2776}
     - Class: 114
-      Script: {instanceID: 2820}
+      Script: {instanceID: 2826}
     - Class: 114
-      Script: {instanceID: 2982}
+      Script: {instanceID: 2880}
     - Class: 114
-      Script: {instanceID: 2990}
+      Script: {instanceID: 2986}
     - Class: 114
-      Script: {instanceID: 3082}
+      Script: {instanceID: 2994}
     - Class: 114
-      Script: {instanceID: 3644}
+      Script: {instanceID: 3088}
     - Class: 114
-      Script: {instanceID: 3752}
+      Script: {instanceID: 3650}
     - Class: 114
-      Script: {instanceID: 3914}
+      Script: {instanceID: 3758}
     - Class: 114
-      Script: {instanceID: 4088}
+      Script: {instanceID: 3920}
     - Class: 114
-      Script: {instanceID: 4156}
+      Script: {instanceID: 4094}
     - Class: 114
-      Script: {instanceID: 4166}
+      Script: {instanceID: 4172}
     - Class: 114
-      Script: {instanceID: 4186}
+      Script: {instanceID: 4192}
     - Class: 114
-      Script: {instanceID: 4510}
+      Script: {instanceID: 4204}
+    - Class: 114
+      Script: {instanceID: 4516}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -219,12 +212,6 @@ ScriptsOnlyBuild:
     className: LayoutElement
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: MakeCalendar
-  - hash:
-      serializedVersion: 2
       Hash: 6bc76e17f0d5e93f3eea7f5a2fe227f3
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -303,7 +290,7 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
-      Hash: 41e6405b082add4b3e843db48e359bb2
+      Hash: d5f9e2f0219abe67b8da0c52086a870e
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Subject
@@ -415,12 +402,6 @@ ScriptsOnlyBuild:
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: DropDownChange
-  - hash:
-      serializedVersion: 2
-      Hash: eced9a745839ccf7c2e76262f039e2ef
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: Shooter
   - hash:
       serializedVersion: 2
       Hash: 748dd2a2a28da4e618912da5ac45684b
@@ -549,7 +530,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: e7c65e0f82c8603658401260a017f9c1
+      Hash: cc658350d2beab5244e10b015243ab0d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -657,12 +638,6 @@ ScriptsOnlyBuild:
     className: ControlPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: 507f9b3a592339a19bcee257d9f34de2
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: ScrollViewController
-  - hash:
-      serializedVersion: 2
       Hash: ef5c43f921427d03730f6ea4c848f07d
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -675,16 +650,16 @@ ScriptsOnlyBuild:
     className: TMP_Settings
   - hash:
       serializedVersion: 2
+      Hash: 8b87b22bfdf5e3df34a01996a8012184
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ScrollViewController
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: Unity.2D.Animation.Runtime.dll
     namespaceName: UnityEngine.U2D.Animation
     className: SpriteSkinEntity
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: Bullet
   - hash:
       serializedVersion: 2
       Hash: 28cfb4bd305dd11c6326cc3ee7c14138
@@ -748,4 +723,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/MSI/Downloads/SAMPLE-9.apk
+  playerPath: C:/Users/MSI/Downloads/SAMPLE-11.apk

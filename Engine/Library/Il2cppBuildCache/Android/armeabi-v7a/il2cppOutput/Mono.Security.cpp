@@ -1709,7 +1709,7 @@ IL_000a:
 		ArrayList_t6C1A49839DC1F0D568E8E11FA1626FCF0EC06575 * L_1 = __this->get_elist_2();
 		NullCheck(L_1);
 		int32_t L_2;
-		L_2 = VirtFuncInvoker0< int32_t >::Invoke(19 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_1);
+		L_2 = VirtFuncInvoker0< int32_t >::Invoke(21 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_1);
 		return L_2;
 	}
 }
@@ -1815,7 +1815,7 @@ IL_0016:
 		ASN1_tCB86B6A02250200ED166EA857DC3D1C422BD94D8 * L_4 = ___asn10;
 		NullCheck(L_3);
 		int32_t L_5;
-		L_5 = VirtFuncInvoker1< int32_t, RuntimeObject * >::Invoke(24 /* System.Int32 System.Collections.ArrayList::Add(System.Object) */, L_3, L_4);
+		L_5 = VirtFuncInvoker1< int32_t, RuntimeObject * >::Invoke(27 /* System.Int32 System.Collections.ArrayList::Add(System.Object) */, L_3, L_4);
 	}
 
 IL_0023:
@@ -1868,7 +1868,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19
 		ArrayList_t6C1A49839DC1F0D568E8E11FA1626FCF0EC06575 * L_2 = __this->get_elist_2();
 		NullCheck(L_2);
 		RuntimeObject* L_3;
-		L_3 = VirtFuncInvoker0< RuntimeObject* >::Invoke(30 /* System.Collections.IEnumerator System.Collections.ArrayList::GetEnumerator() */, L_2);
+		L_3 = VirtFuncInvoker0< RuntimeObject* >::Invoke(34 /* System.Collections.IEnumerator System.Collections.ArrayList::GetEnumerator() */, L_2);
 		V_6 = L_3;
 	}
 
@@ -1893,7 +1893,7 @@ IL_0026:
 			ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726* L_8 = V_7;
 			NullCheck(L_7);
 			int32_t L_9;
-			L_9 = VirtFuncInvoker1< int32_t, RuntimeObject * >::Invoke(24 /* System.Int32 System.Collections.ArrayList::Add(System.Object) */, L_7, (RuntimeObject *)(RuntimeObject *)L_8);
+			L_9 = VirtFuncInvoker1< int32_t, RuntimeObject * >::Invoke(27 /* System.Int32 System.Collections.ArrayList::Add(System.Object) */, L_7, (RuntimeObject *)(RuntimeObject *)L_8);
 			int32_t L_10 = V_3;
 			ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726* L_11 = V_7;
 			NullCheck(L_11);
@@ -1969,7 +1969,7 @@ IL_0079:
 		int32_t L_20 = V_9;
 		NullCheck(L_19);
 		RuntimeObject * L_21;
-		L_21 = VirtFuncInvoker1< RuntimeObject *, int32_t >::Invoke(22 /* System.Object System.Collections.ArrayList::get_Item(System.Int32) */, L_19, L_20);
+		L_21 = VirtFuncInvoker1< RuntimeObject *, int32_t >::Invoke(25 /* System.Object System.Collections.ArrayList::get_Item(System.Int32) */, L_19, L_20);
 		V_10 = ((ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726*)Castclass((RuntimeObject*)L_21, ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726_il2cpp_TypeInfo_var));
 		ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726* L_22 = V_10;
 		ByteU5BU5D_tDBBEB0E8362242FA7223000D978B0DD19D4B0726* L_23 = V_0;
@@ -1991,7 +1991,7 @@ IL_00a7:
 		ArrayList_t6C1A49839DC1F0D568E8E11FA1626FCF0EC06575 * L_30 = __this->get_elist_2();
 		NullCheck(L_30);
 		int32_t L_31;
-		L_31 = VirtFuncInvoker0< int32_t >::Invoke(19 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_30);
+		L_31 = VirtFuncInvoker0< int32_t >::Invoke(21 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_30);
 		if ((((int32_t)L_29) < ((int32_t)L_31)))
 		{
 			goto IL_0079;
@@ -2406,7 +2406,7 @@ IL_0008:
 			ArrayList_t6C1A49839DC1F0D568E8E11FA1626FCF0EC06575 * L_2 = __this->get_elist_2();
 			NullCheck(L_2);
 			int32_t L_3;
-			L_3 = VirtFuncInvoker0< int32_t >::Invoke(19 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_2);
+			L_3 = VirtFuncInvoker0< int32_t >::Invoke(21 /* System.Int32 System.Collections.ArrayList::get_Count() */, L_2);
 			if ((((int32_t)L_1) < ((int32_t)L_3)))
 			{
 				goto IL_001a;
@@ -2425,7 +2425,7 @@ IL_001a:
 			int32_t L_5 = ___index0;
 			NullCheck(L_4);
 			RuntimeObject * L_6;
-			L_6 = VirtFuncInvoker1< RuntimeObject *, int32_t >::Invoke(22 /* System.Object System.Collections.ArrayList::get_Item(System.Int32) */, L_4, L_5);
+			L_6 = VirtFuncInvoker1< RuntimeObject *, int32_t >::Invoke(25 /* System.Object System.Collections.ArrayList::get_Item(System.Int32) */, L_4, L_5);
 			V_0 = ((ASN1_tCB86B6A02250200ED166EA857DC3D1C422BD94D8 *)CastclassClass((RuntimeObject*)L_6, ASN1_tCB86B6A02250200ED166EA857DC3D1C422BD94D8_il2cpp_TypeInfo_var));
 			goto IL_0033;
 		}
