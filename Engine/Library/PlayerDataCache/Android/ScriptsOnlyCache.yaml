@@ -549,7 +549,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: 7cb5f9231d6a648b9ba34e8de414b202
+      Hash: e7c65e0f82c8603658401260a017f9c1
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -748,4 +748,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/MSI/Downloads/SAMPLE-7.apk
+  playerPath: C:/Users/MSI/Downloads/SAMPLE-9.apk
