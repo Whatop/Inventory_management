@@ -46,11 +46,14 @@ public class GameManager : MonoBehaviour
     public TMP_InputField SubjectNameSearch;
     string filePath;
 
-    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=K2:P";//전해업체
+    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";//전해업체
     string CodeURL = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
 
-    public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput, CompanyNameInput, NoneInput;
+    // ENROLLMENT 
+    public Dropdown CompanyDrop, NoneDrop;
+    public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
+    public List<string> CompanyData;
 
     DateTime _dateTime;
     public int CompanyType; /// 건들면 코드 망가질수도 있음
@@ -100,20 +103,6 @@ public class GameManager : MonoBehaviour
     {
         SubjectNameSearch.text = "";
     }
-    public void UpSeachCount()
-    {
-        SeachIndex++;
-        TabClick("Subject");
-    }
-
-    public void DownSeachCount()
-    {
-        if (SeachIndex > 1)
-        {
-            SeachIndex--;
-            TabClick("Subject");
-        }
-    }
     public void Start()
     {
         isCompanyName = true;
@@ -130,6 +119,7 @@ public class GameManager : MonoBehaviour
         {
             CheckBoxs[i].SetActive(false);
         }
+        Load();
     }
 
     public int GetSeachResult()
@@ -137,6 +127,7 @@ public class GameManager : MonoBehaviour
         // DayRemove();
 
         int result = DoSearchData.Count;
+
         if (result >= 50)
         {
             if (result > SeachIndex * 50)
@@ -166,7 +157,6 @@ public class GameManager : MonoBehaviour
     {
         dropdown.value = index;
         CompanySearch = index;
-        // 전체,유진,천보,인창,청명,하나,j&f,비엘아이,한특
 
     }
     public void ResetData()
@@ -174,11 +164,11 @@ public class GameManager : MonoBehaviour
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
-        SubjectInput.text = "";
-        ReleaseInput.text = "";
-        ReceivingInput.text = "";
-        CompanyNameInput.text = "";
-        NoneInput.text = "";
+        SubjectInput.text = "제품명";
+        ReleaseInput.text = "출고";
+        ReceivingInput.text = "입고";
+        CompanyDrop.captionText.text = "거래처";
+        NoneDrop.captionText.text = "부서";
         AllCount.text = "잔고";
         if (Time.frameCount % 30 == 0)
         {
@@ -194,14 +184,38 @@ public class GameManager : MonoBehaviour
     {
         CheckBoxs[a].SetActive(true);
     }
+    List<string> RemoveDuplicates(List<string> inputList)
+    {
+        HashSet<string> uniqueElements = new HashSet<string>();
+        List<string> result = new List<string>();
+
+        foreach (var element in inputList)
+        {
+            // HashSet을 사용하여 중복된 항목을 걸러냄
+            if (uniqueElements.Add(element))
+            {
+                result.Add(element);
+            }
+        }
+
+        return result;
+    }
     public void TabClick(string tabName)
     {
         // if (tabName == "Subject" || tabName == "Material")
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
         SubjectNameSearch.text = "";
+        dropdown.options.Clear();
+        dropdown.options.Add(new Dropdown.OptionData("전체"));
 
-        
+        List<string> uniqueList = RemoveDuplicates(CompanyData);
+        foreach (var item in uniqueList)
+        {
+            dropdown.options.Add(new Dropdown.OptionData(item));
+
+        }
+        OnDropdownEvent(0);
         if (!subfirst)
         {
             ScrollViewController.Instance.UIObjectReset();
@@ -214,12 +228,14 @@ public class GameManager : MonoBehaviour
             int tabNum = 5;
             switch (tabName)
             {
+                //Press, Welding, Assembly, All
                 case "Main": tabNum = 0; break;
-                case "Subject": tabNum = 1; ; break;
+                case "All": tabNum = 1; ; break;
+                case "Press": tabNum = 1; ; break;
                 case "Enrollment": tabNum = 2; break;
                 case "None": tabNum = 3; break;
-                case "ReSubject": tabNum = 1; break;
-                case "EndProduct": tabNum = 1; break;
+                case "Welding": tabNum = 1; break;
+                case "Assembly": tabNum = 1; break;
             }
             for (int i = 0; i < Scenes.Length; i++)
             {
@@ -236,27 +252,33 @@ public class GameManager : MonoBehaviour
             }
 
         }
-
-        if(tabName == "Subject")
+        if (tabName == "Press")
         {
             Image1.color = new Color(0.4273228f, 0.409434f, 1f); //OUT
             Image2.color = new Color(0.5273228f, 0.409434f, 1f); // IN
-            text1.text = "입출고 관리";
+            text1.text = "유압 관리";
         }
-        else if(tabName == "ReSubject")
+        else if (tabName == "All")
         {
             Image1.color = new Color(0.03588462f, 0.5943396f, 0.04296107f); // OUT
             Image2.color = new Color(0.3629665f, 0.8773585f, 0.1522962f);  // IN
-            text1.text = "재전해 관리";
-        } 
-        else if(tabName == "EndProduct")
+            text1.text = "모든제품 관리";
+        }
+        else if (tabName == "Welding")
         {
             Image1.color = new Color(0.9150943f, 0.2495712f, 0f); //OUT
             Image2.color = new Color(0.9607844f, 0.3607843f, 0.1372549f); // IN
-            text1.text = "완제품 관리";
+            text1.text = "용접 관리";
         }
-        if (curType != "Enrollment")
-             StartCoroutine(Lookup(curType));
+        else if (tabName == "Assembly")
+        {
+            Image1.color = new Color(0.8207547f, 0.1664738f, 0.5439883f); //OUT
+            Image2.color = new Color(0.8607844f, 0.13607843f, 0.1372549f); // IN
+            text1.text = "조립 관리";
+        }
+
+        if(tabName != "Enrollment")
+        StartCoroutine(Lookup(curType));
         
     }
     // 전체,유진,천보,인창,청명
@@ -470,6 +492,7 @@ public class GameManager : MonoBehaviour
     public void Load()
     {
         MyCompanyDatabase.Clear();
+        CompanyData.Clear();
         string jdata = File.ReadAllText(filePath);
         string[] line = jdata.Substring(0, jdata.Length).Split('\n');
         for (int i = 0; i < line.Length; i++)
@@ -484,7 +507,8 @@ public class GameManager : MonoBehaviour
                         row[j] = "0";
                     }
                 }
-                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-","/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
+                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
+                CompanyData.Add(row[4]);
             }
 
         }
@@ -498,13 +522,11 @@ public class GameManager : MonoBehaviour
         SubjectName = SubjectInput.text.Trim();
         Release = ReleaseInput.text.Trim();
         Receiving = ReceivingInput.text.Trim();
-        CompanyName = CompanyNameInput.text.Trim();
+        CompanyName = CompanyDrop.captionText.text.Trim();
         ReceivingTime = TimeInput.text.Trim();
         Date = DateInput.text.Trim();
-        None = NoneInput.text.Trim();
-
-        if (SubjectName == "" || Release == "" || Receiving == "" || CompanyName == "" && TimeInput.text.Length >= 4) return false;
-        else return true;
+        None = NoneDrop.captionText.text.Trim();
+        return true;
     }
     public void Register() //등록
     {
@@ -546,13 +568,16 @@ public class GameManager : MonoBehaviour
 
     IEnumerator Lookup(string curType)
     {
-        if (curType == "Subject")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&range=K2:P";
-        else if (curType == "ReSubject")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:P";
-        else
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:P";
-
+        //@@ 추가 Press, Welding, Assembly, All
+        if (curType == "Press")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=0&range=K2:Q";
+        else if (curType == "All")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";
+        else if (curType == "Welding")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:Q";
+         else if (curType == "Assembly")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:Q";
+        
         UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
 
         yield return www.SendWebRequest();

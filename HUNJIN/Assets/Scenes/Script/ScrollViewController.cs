@@ -213,8 +213,9 @@ public class ScrollViewController : MonoBehaviour
 		scrollRect.content.sizeDelta = new Vector2(scrollRect.content.sizeDelta.x, y);
 	}
 	public void UIObjectReset()
-    {
-		if(uiObjects != null) { 
+	{
+		if (uiObjects != null)
+		{
 			for (int i = 0; i < uiObjects.Count; i++)
 			{
 				uiObjects[i].gameObject.SetActive(false);
@@ -240,7 +241,7 @@ public class ScrollViewController : MonoBehaviour
 			reveprod = 0;
 		}
 		dont = false;
-		GameManager.Instance.isCompanyName = false ;
+		GameManager.Instance.isCompanyName = false;
 		for (int i = 0; i < uiObjects.Count; i++)
 		{
 			uiObjects[i].gameObject.SetActive(false);
@@ -263,14 +264,15 @@ public class ScrollViewController : MonoBehaviour
 		ResetId();
 		dont = true;
 		int count = 0;
-		if (gameManager.CompanySearch == 0){ 
+		if (gameManager.CompanySearch == 0)
+		{
 			int a = uiObjects.Count;
 			for (int i = 0; i < a; i++)
 			{
 				uiObjects[i].gameObject.SetActive(false);
 			}
 
-			 count = gameManager.ALLDOTextSearch();
+			count = gameManager.ALLDOTextSearch();
 			for (int i = 0; i < count; i++)
 			{
 				SpawnFromPool("SubjectAll", transform.position);
@@ -307,12 +309,12 @@ public class ScrollViewController : MonoBehaviour
 	}
 	public void TextSearch(Text text) //검색
 	{
-		int 
+		int
 			c = uiObjects.FindAll(x => x.name == "Subject").Count;
 		//검색한 내용과 비교해서 
 		// 개수 생성
 		gameManager.isSubject = true;
-		ResetId(); 
+		ResetId();
 		dont = true;
 		int count = gameManager.ProductSearch();
 		if (count > c - reveprod)
@@ -342,7 +344,7 @@ public class ScrollViewController : MonoBehaviour
 	{
 		//검색한 내용과 비교해서 
 		// 개수 생성
-		int 
+		int
 			c = uiObjects.FindAll(x => x.name == "Subject").Count;
 		gameManager.isSubject = true;
 		ResetId();
@@ -373,8 +375,8 @@ public class ScrollViewController : MonoBehaviour
 
 	public void DoSearch() //검색
 	{
-        GameManager.Instance.AllSubjectCountText.gameObject.SetActive(false);
-        GameManager.Instance.AllCount.gameObject.SetActive(false);
+		GameManager.Instance.AllSubjectCountText.gameObject.SetActive(false);
+		GameManager.Instance.AllCount.gameObject.SetActive(false);
 		gameManager.isSubject = false;
 		//검색한 내용과 비교해서 
 		// 개수 생성
@@ -390,14 +392,14 @@ public class ScrollViewController : MonoBehaviour
 		{
 			uiObjects[i].gameObject.SetActive(false);
 		}
-		
+
 		int count = gameManager.ALLDOTextSearch();
 		//for (int i = 0; i < count; i++)
 		//{
 		//	SpawnFromPool("SubjectAll", transform.position);
 		//}
 		Inquiry();
-		
+
 	}
 
 

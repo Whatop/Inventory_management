@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Subject : MonoBehaviour
 {
-    public Text SubjectName; 
+    public Text SubjectName;
     public Text SubjectDate; // 끄기
     public Text SubjectRelease;
     public Text SubjectReceiving; // 끄기
@@ -25,8 +25,8 @@ public class Subject : MonoBehaviour
 
     private void OnDisable()
     {
-        if(!First)
-        myId = ScrollViewController.Instance.GetId();
+        if (!First)
+            myId = ScrollViewController.Instance.GetId();
         ScrollViewController.ReturnToPool(gameObject);
         First = true;
     }
@@ -34,7 +34,7 @@ public class Subject : MonoBehaviour
     {
         if (!ScrollViewController.Instance.dont)
         {
-            if (GameManager.Instance.MySearchData.Count != 0) 
+            if (GameManager.Instance.MySearchData.Count != 0)
             {
                 if (GameManager.Instance.isSubject) //검색용
                 {
@@ -46,12 +46,12 @@ public class Subject : MonoBehaviour
                 {
                     SubjectReceiving.gameObject.SetActive(false);
                 }
-                    myId = ScrollViewController.Instance.GetId();
+                myId = ScrollViewController.Instance.GetId();
                 string[] searchSubject = GameManager.Instance.GetSearch(myId);
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = searchSubject[1].Trim();
-                
-                
+
+
                 if (GameManager.Instance.isSubject)
                 {
                     SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
@@ -85,12 +85,12 @@ public class Subject : MonoBehaviour
             }
             else // --------------------- AllSearch --------------------
             {
-
+                if(First)
                 myId = ScrollViewController.Instance.GetId();
                 //체인지 테스트 ;;
                 string[] AllsearchSubject = GameManager.Instance.DoGetSearch(myId);
                 SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
-               SubjectName.text = AllsearchSubject[1].Trim();
+                SubjectName.text = AllsearchSubject[1].Trim();
 
 
                 // COLOR
@@ -105,7 +105,7 @@ public class Subject : MonoBehaviour
                         // Bg.color = new Color(0.4273228f, 0.409434f, 1f, 1f); //blue
                         //Bg.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 0.5f); // carrot
                         image.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f); // carrot
-                        SubjectName.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f);
+                        //SubjectName.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f);
                     }
                     else
                     {
@@ -120,11 +120,11 @@ public class Subject : MonoBehaviour
         }
     }
 
-        
-        void DeactiveDelay() => gameObject.SetActive(false);
+
+    void DeactiveDelay() => gameObject.SetActive(false);
     public void SearchButton(Text text)
     {
-        if(!GameManager.Instance.isSubject)
-        ScrollViewController.Instance.ReTextSearch(text);
+        if (!GameManager.Instance.isSubject)
+            ScrollViewController.Instance.ReTextSearch(text);
     }
 }
