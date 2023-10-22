@@ -3,14 +3,10 @@ ScriptsOnlyBuild:
     Assembly-CSharp.dll:
     - CalendarController
     - CalendarDateItem
-    - DropDownChange
     - GameManager
     - ScrollViewController
     - Subject
     - Today
-    Febucci.TextAnimator.Runtime.dll:
-    - Febucci.UI.TextAnimator
-    - Febucci.UI.TextAnimatorPlayer
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
@@ -35,6 +31,12 @@ ScriptsOnlyBuild:
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
     - TMPro.TextMeshProUGUI
+    UnityEditor.Graphs.dll:
+    - UnityEditor.Graphs.AnimationBlendTree.Graph
+    - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.Graph
+    - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
+    - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -72,72 +74,70 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 49
       Script: {instanceID: 0}
+    - Class: 74
+      Script: {instanceID: 0}
+    - Class: 91
+      Script: {instanceID: 0}
     - Class: 95
       Script: {instanceID: 0}
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1468}
+      Script: {instanceID: 1462}
     - Class: 114
-      Script: {instanceID: 1548}
+      Script: {instanceID: 1542}
     - Class: 114
-      Script: {instanceID: 1630}
+      Script: {instanceID: 1622}
     - Class: 114
-      Script: {instanceID: 1642}
+      Script: {instanceID: 1634}
     - Class: 114
-      Script: {instanceID: 1700}
+      Script: {instanceID: 1692}
     - Class: 114
-      Script: {instanceID: 1794}
+      Script: {instanceID: 1782}
     - Class: 114
-      Script: {instanceID: 1982}
+      Script: {instanceID: 1968}
     - Class: 114
-      Script: {instanceID: 2034}
+      Script: {instanceID: 2016}
     - Class: 114
-      Script: {instanceID: 2106}
+      Script: {instanceID: 2086}
     - Class: 114
-      Script: {instanceID: 2116}
+      Script: {instanceID: 2094}
     - Class: 114
-      Script: {instanceID: 2286}
+      Script: {instanceID: 2256}
     - Class: 114
-      Script: {instanceID: 2476}
+      Script: {instanceID: 2434}
     - Class: 114
-      Script: {instanceID: 2504}
+      Script: {instanceID: 2460}
     - Class: 114
-      Script: {instanceID: 2656}
+      Script: {instanceID: 2602}
     - Class: 114
-      Script: {instanceID: 2698}
+      Script: {instanceID: 2644}
     - Class: 114
-      Script: {instanceID: 2830}
+      Script: {instanceID: 2770}
     - Class: 114
-      Script: {instanceID: 2882}
+      Script: {instanceID: 2820}
     - Class: 114
-      Script: {instanceID: 2936}
+      Script: {instanceID: 2982}
     - Class: 114
-      Script: {instanceID: 3048}
+      Script: {instanceID: 2990}
     - Class: 114
-      Script: {instanceID: 3056}
+      Script: {instanceID: 3082}
     - Class: 114
-      Script: {instanceID: 3158}
+      Script: {instanceID: 3644}
     - Class: 114
-      Script: {instanceID: 3738}
+      Script: {instanceID: 3752}
     - Class: 114
-      Script: {instanceID: 3854}
+      Script: {instanceID: 3914}
     - Class: 114
-      Script: {instanceID: 4024}
+      Script: {instanceID: 4088}
     - Class: 114
-      Script: {instanceID: 4200}
+      Script: {instanceID: 4156}
     - Class: 114
-      Script: {instanceID: 4280}
+      Script: {instanceID: 4166}
     - Class: 114
-      Script: {instanceID: 4300}
+      Script: {instanceID: 4186}
     - Class: 114
-      Script: {instanceID: 4312}
-    - Class: 114
-      Script: {instanceID: 4526}
-    - Class: 114
-      Script: {instanceID: 4634}
-    - Class: 114
-      Script: {instanceID: 4968}
+      Script: {instanceID: 4510}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -175,12 +175,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
     className: TMP_InputField
-  - hash:
-      serializedVersion: 2
-      Hash: 6165496120695cb5f7f29177f39826fc
-    assemblyName: Febucci.TextAnimator.Runtime.dll
-    namespaceName: Febucci.UI.Core
-    className: BuiltinBehaviorsDataScriptable
   - hash:
       serializedVersion: 2
       Hash: cc831401738a26bed91b9b36db394f83
@@ -223,6 +217,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: LayoutElement
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: MakeCalendar
   - hash:
       serializedVersion: 2
       Hash: 6bc76e17f0d5e93f3eea7f5a2fe227f3
@@ -303,22 +303,10 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
-      Hash: d5f9e2f0219abe67b8da0c52086a870e
+      Hash: 41e6405b082add4b3e843db48e359bb2
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Subject
-  - hash:
-      serializedVersion: 2
-      Hash: 93fca25fd95eac48b0a3e8a689a64bd3
-    assemblyName: Febucci.TextAnimator.Demo.Runtime.dll
-    namespaceName: Febucci.UI.Examples
-    className: SetTextOnEnable
-  - hash:
-      serializedVersion: 2
-      Hash: 135a1aba436d7f34136990c29880c874
-    assemblyName: Febucci.TextAnimator.Runtime.dll
-    namespaceName: Febucci.UI.Core
-    className: BuiltinAppearancesDataScriptable
   - hash:
       serializedVersion: 2
       Hash: cfdd0010efd7b54c2b7512656dbc9119
@@ -381,12 +369,6 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
-      Hash: 9f32ab4f23167fcab6465352645b4b41
-    assemblyName: Febucci.TextAnimator.Runtime.dll
-    namespaceName: Febucci.UI.Core
-    className: TAnimGlobalDataScriptable
-  - hash:
-      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestRunner.Utils
@@ -397,12 +379,6 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: GraphicRaycaster
-  - hash:
-      serializedVersion: 2
-      Hash: 085cf98cd1aa133673007efdee36e29f
-    assemblyName: Febucci.TextAnimator.Demo.Runtime.dll
-    namespaceName: Febucci.UI.Examples
-    className: DefaultEffectsExample
   - hash:
       serializedVersion: 2
       Hash: f40fedccd4adbc76605bea6d67537e4b
@@ -441,10 +417,10 @@ ScriptsOnlyBuild:
     className: DropDownChange
   - hash:
       serializedVersion: 2
-      Hash: 085cf98cd1aa133673007efdee36e29f
-    assemblyName: Febucci.TextAnimator.Demo.Runtime.dll
-    namespaceName: Febucci.UI.Examples
-    className: EffectsTesting
+      Hash: eced9a745839ccf7c2e76262f039e2ef
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Shooter
   - hash:
       serializedVersion: 2
       Hash: 748dd2a2a28da4e618912da5ac45684b
@@ -573,7 +549,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: fbfda8b6c6eafddfc111669a929c7f93
+      Hash: 7cb5f9231d6a648b9ba34e8de414b202
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -601,12 +577,6 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: Dropdown
-  - hash:
-      serializedVersion: 2
-      Hash: ee9b4968752e0bed42520bcf1c60f483
-    assemblyName: Febucci.TextAnimator.Demo.Runtime.dll
-    namespaceName: Febucci.UI.Examples
-    className: EventExample
   - hash:
       serializedVersion: 2
       Hash: a5781dc71a671b1ad2b38de19f24b71f
@@ -687,6 +657,12 @@ ScriptsOnlyBuild:
     className: ControlPlayableAsset
   - hash:
       serializedVersion: 2
+      Hash: 507f9b3a592339a19bcee257d9f34de2
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ScrollViewController
+  - hash:
+      serializedVersion: 2
       Hash: ef5c43f921427d03730f6ea4c848f07d
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -699,16 +675,16 @@ ScriptsOnlyBuild:
     className: TMP_Settings
   - hash:
       serializedVersion: 2
-      Hash: 8b87b22bfdf5e3df34a01996a8012184
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: ScrollViewController
-  - hash:
-      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: Unity.2D.Animation.Runtime.dll
     namespaceName: UnityEngine.U2D.Animation
     className: SpriteSkinEntity
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Bullet
   - hash:
       serializedVersion: 2
       Hash: 28cfb4bd305dd11c6326cc3ee7c14138
@@ -729,12 +705,6 @@ ScriptsOnlyBuild:
     className: TMP_SubMeshUI
   - hash:
       serializedVersion: 2
-      Hash: 16b462a4991808670bf2520c8011f9aa
-    assemblyName: Febucci.TextAnimator.Runtime.dll
-    namespaceName: Febucci.UI
-    className: TextAnimator
-  - hash:
-      serializedVersion: 2
       Hash: fd68d84f33fad85aac38f2739c0ee270
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
@@ -747,22 +717,10 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
-      Hash: b5f5c313b565c3461aa1ebd29a79bcdd
-    assemblyName: Febucci.TextAnimator.Demo.Runtime.dll
-    namespaceName: Febucci.UI.Examples
-    className: UsageExample
-  - hash:
-      serializedVersion: 2
       Hash: 8220b46879dc5e37db1b940c938f5744
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: SignalEmitter
-  - hash:
-      serializedVersion: 2
-      Hash: bc7355e083be4799428412373d9e7ade
-    assemblyName: Febucci.TextAnimator.Runtime.dll
-    namespaceName: Febucci.UI
-    className: TextAnimatorPlayer
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
@@ -790,4 +748,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/MSI/Downloads/SAMPLE-14.apk
+  playerPath: C:/Users/MSI/Downloads/SAMPLE-7.apk

@@ -1,0 +1,252 @@
+Using pre-set license
+Built from '2020.3/staging' branch; Version is '2020.3.6f1 (338bb68529b2) revision 3378102'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10 Home; OS build 22621.2283; Version 2009; 64bit' Language: 'ko' Physical Memory: 16215 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+ COMMAND LINE ARGUMENTS:
+D:\Unity\2020.3.6f1\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker1
+-projectPath
+D:/github/Sample/HUNJIN
+-logFile
+Logs/AssetImportWorker1.log
+-srvPort
+55879
+Successfully changed project path to: D:/github/Sample/HUNJIN
+D:/github/Sample/HUNJIN
+Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 22.96 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.3.6f1 (338bb68529b2)
+[Subsystems] Discovering subsystems at path D:/Unity/2020.3.6f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/github/Sample/HUNJIN/Assets
+GfxDevice: creating device client; threaded=0
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 4070 Ti (ID=0x2782)
+    Vendor:   
+    VRAM:     12010 MB
+    Driver:   31.0.15.3640
+Initialize mono
+Mono path[0] = 'D:/Unity/2020.3.6f1/Editor/Data/Managed'
+Mono path[1] = 'D:/Unity/2020.3.6f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = 'D:/Unity/2020.3.6f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56188
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/2020.3.6f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.000578 seconds.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 20.69 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.829 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000799 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 20.05 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  2.028 seconds
+Platform modules already initialized, skipping
+========================================================================
+Worker process is ready to serve import requests
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.16 seconds
+Refreshing native plugins compatible for Editor in 0.29 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1863 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 108.1 MB.
+System memory in use after: 108.1 MB.
+
+Unloading 25 unused Assets to reduce memory usage. Loaded Objects now: 2326.
+Total: 1.489600 ms (FindLiveObjects: 0.243400 ms CreateObjectMapping: 0.038100 ms MarkObjects: 1.101400 ms  DeleteObjects: 0.104800 ms)
+
+========================================================================
+Received Import Request.
+  path: Assets/Scenes/Painting/UIs/e4cdefb016382ed3.png
+  artifactKey: Guid(f040c15cd6e1d744eacf4fb976379ffc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/e4cdefb016382ed3.png using Guid(f040c15cd6e1d744eacf4fb976379ffc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'fba6d8e8cad7ff900c395fda94519760') in 0.226142 seconds
+  Import took 0.369230 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000258 seconds.
+  path: Assets/Scenes/Painting/UIs/bf88000df8e2411f.png
+  artifactKey: Guid(a9eda4e978eb524439ab52ccf4a66fa2) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/bf88000df8e2411f.png using Guid(a9eda4e978eb524439ab52ccf4a66fa2) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ca904cd21e8473a6f5582c9c1ea20bc3') in 0.031816 seconds
+  Import took 0.077548 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000192 seconds.
+  path: Assets/img/Exit.png
+  artifactKey: Guid(14e0d7ab99962e64e90d311fa9102037) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/img/Exit.png using Guid(14e0d7ab99962e64e90d311fa9102037) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '33b68141b0f11cfdaa4ff9ae95187d4e') in 0.057166 seconds
+  Import took 0.181769 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000256 seconds.
+  path: Assets/Scenes/Painting/UIs/58120328046bb3eb.png
+  artifactKey: Guid(0d572bc29a719914387a9c64904947ed) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/58120328046bb3eb.png using Guid(0d572bc29a719914387a9c64904947ed) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'af97b1619324081ffc6a8bea7d131d9d') in 0.040297 seconds
+  Import took 0.059000 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000162 seconds.
+  path: Assets/Scenes/Painting/UIs/f3bac2cd6cc56638.png
+  artifactKey: Guid(d21bca506c35b5046ae9c053b887dd48) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/f3bac2cd6cc56638.png using Guid(d21bca506c35b5046ae9c053b887dd48) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '6ab3bcd4fb74856a56f285b6cfd8f5cc') in 0.049476 seconds
+  Import took 0.093171 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000218 seconds.
+  path: Assets/Scenes/Painting/UIs/fc47869156a4014d.png
+  artifactKey: Guid(4617b4653081b804d8f3bd4f1b6f9e23) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/fc47869156a4014d.png using Guid(4617b4653081b804d8f3bd4f1b6f9e23) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5966ddf11657dae937d6577ae354130e') in 0.010669 seconds
+  Import took 0.126786 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000293 seconds.
+  path: Assets/Scenes/Painting/UIs/ba3d39ce70efc1d3.png
+  artifactKey: Guid(6db527d7210314c4d8424de1d4905262) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/ba3d39ce70efc1d3.png using Guid(6db527d7210314c4d8424de1d4905262) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '2a06d39a3bd53d072b94724051a800e8') in 0.027882 seconds
+  Import took 0.038904 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000211 seconds.
+  path: Assets/Scenes/Painting/UIs/01628526eeff16a6.png
+  artifactKey: Guid(51f1caa8547a0e14cab3acbc8171249f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/01628526eeff16a6.png using Guid(51f1caa8547a0e14cab3acbc8171249f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8ce0a7db3f1769f3adf61023c527c94f') in 0.021423 seconds
+  Import took 0.038674 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000221 seconds.
+  path: Assets/Scenes/Painting/UIs/5381347ab62ec415.png
+  artifactKey: Guid(d9184456e5b4dee489b4c8a2b1771d4c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/5381347ab62ec415.png using Guid(d9184456e5b4dee489b4c8a2b1771d4c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '0f63356a0a4b41205f0fb7468e657287') in 0.118072 seconds
+  Import took 0.132027 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000166 seconds.
+  path: Assets/Scenes/Painting/icon2.png
+  artifactKey: Guid(e027cbee1c42f9546bfc01be4b05e665) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/icon2.png using Guid(e027cbee1c42f9546bfc01be4b05e665) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'd9fcccb69d7a7e76c7645684059c2bdb') in 0.072506 seconds
+  Import took 0.083344 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000185 seconds.
+  path: Assets/res/calendarIcon.png
+  artifactKey: Guid(65be27591bb23cc459368e1958fc726b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/res/calendarIcon.png using Guid(65be27591bb23cc459368e1958fc726b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ae03fa279eceec94c9b6eff937b55398') in 0.058689 seconds
+  Import took 0.089648 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000259 seconds.
+  path: Assets/Scenes/Painting/1671682674975.jpg
+  artifactKey: Guid(806b06876ebbb51428a74e9eabc52094) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/1671682674975.jpg using Guid(806b06876ebbb51428a74e9eabc52094) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '2b0394a706bc8ba6cbd6687fb2fa23af') in 0.049013 seconds
+  Import took 0.068791 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000221 seconds.
+  path: Assets/Scenes/Painting/icon 1.png
+  artifactKey: Guid(770b2d1e9a14c3a4da413a9f2455331d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/icon 1.png using Guid(770b2d1e9a14c3a4da413a9f2455331d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c43689b838af33ccb477cc5dd1448212') in 0.072274 seconds
+  Import took 0.148459 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000174 seconds.
+  path: Assets/Scenes/Painting/UIs/75c32b14b52cd666.png
+  artifactKey: Guid(539b70fb6caf46d4da57f3fce506a4cb) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/75c32b14b52cd666.png using Guid(539b70fb6caf46d4da57f3fce506a4cb) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9f04052b6e7d66fec1126778914aa78d') in 0.083771 seconds
+  Import took 0.142981 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000166 seconds.
+  path: Assets/Scenes/Painting/39-1140x570.png
+  artifactKey: Guid(3974a64a26e27364d93b69afbf52e5c9) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/39-1140x570.png using Guid(3974a64a26e27364d93b69afbf52e5c9) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7ec6d90ea359f0868975329a68b14678') in 0.042840 seconds
+  Import took 0.069373 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000169 seconds.
+  path: Assets/img/month_right_arrow.png
+  artifactKey: Guid(078f8d23f1b773147885c138c68341a8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/img/month_right_arrow.png using Guid(078f8d23f1b773147885c138c68341a8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b05361793d31223a4e3685f9cbe51296') in 0.060341 seconds
+  Import took 0.105862 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000155 seconds.
+  path: Assets/Scenes/Painting/UIs/3fe575beaa3a21fa.png
+  artifactKey: Guid(796dffbb5b0bb4649a5e4fac51c0d375) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/3fe575beaa3a21fa.png using Guid(796dffbb5b0bb4649a5e4fac51c0d375) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '29f32b0aeb9e842049b6a019aaabe94f') in 0.048697 seconds
+  Import took 0.050622 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000185 seconds.
+  path: Assets/img/month_left_arrow.png
+  artifactKey: Guid(7e4bf29fdcf183e48a94d2a16a3e9076) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/img/month_left_arrow.png using Guid(7e4bf29fdcf183e48a94d2a16a3e9076) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b8a6c0d688d10fd0cd7e769d91361622') in 0.027811 seconds
+  Import took 0.036095 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 66.791233 seconds.
+  path: Assets/Scenes/Painting/UIs/UI/Search icon.png
+  artifactKey: Guid(0accfc8f7c97feb41b135394a47f5eae) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Painting/UIs/UI/Search icon.png using Guid(0accfc8f7c97feb41b135394a47f5eae) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4cb3c714ee93228d8fbf2c09abc62c7f') in 0.155377 seconds
+  Import took 0.157782 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 468.877702 seconds.
+  path: Assets/scripts/CalendarController.cs
+  artifactKey: Guid(a65b983b6ab00bc4dbb0ba158aa4c3ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/scripts/CalendarController.cs using Guid(a65b983b6ab00bc4dbb0ba158aa4c3ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c33e81229af96714079c24cd4f30eece') in 0.013192 seconds
+  Import took 0.072182 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.090643 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.34 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.627 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(537395200) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.24 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1848 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 109.4 MB.
+System memory in use after: 109.4 MB.
+
+Unloading 14 unused Assets to reduce memory usage. Loaded Objects now: 2350.
+Total: 1.515100 ms (FindLiveObjects: 0.182800 ms CreateObjectMapping: 0.026400 ms MarkObjects: 1.190300 ms  DeleteObjects: 0.114100 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
