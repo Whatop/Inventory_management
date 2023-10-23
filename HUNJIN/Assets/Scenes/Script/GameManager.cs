@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
     public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
     public List<string> CompanyData;
+    public List<string> NameData;
+    Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
+    Dictionary<string, int> uniqueNameDictionary = new Dictionary<string, int>();
 
     DateTime _dateTime;
     public int CompanyType; /// 건들면 코드 망가질수도 있음
@@ -65,6 +68,8 @@ public class GameManager : MonoBehaviour
     public GameObject[] CheckBoxs;
     [SerializeField]
     private Dropdown dropdown;
+    [SerializeField]
+    private Dropdown SearchDropdown;
 
     public bool isSubject = false;
 
@@ -74,7 +79,6 @@ public class GameManager : MonoBehaviour
     public Image Image2;
     public TextMeshProUGUI text1;
 
-    Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
 
     public static GameManager Instance
     {
@@ -120,9 +124,31 @@ public class GameManager : MonoBehaviour
         {
             CheckBoxs[i].SetActive(false);
         }
+
+        PopulateDropdown(NameData);
+        SubjectNameSearch.onValueChanged.AddListener(OnInputValueChanged);
+    }
+    private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
+    {
+        SearchDropdown.ClearOptions();
+        SearchDropdown.AddOptions(items);
+    }
+    public void OnDropdd()
+    {
+        int selectedIndex = SearchDropdown.value;
+
+        // 현재 선택된 옵션의 텍스트 얻기
+        string selectedText = SearchDropdown.options[selectedIndex].text;
+
+        SubjectNameSearch.text = selectedText;
+    }
+    private void OnInputValueChanged(string text)
+    {
+        List<string> filteredOptions = NameData.FindAll(option => option.StartsWith(text, System.StringComparison.OrdinalIgnoreCase));
+        PopulateDropdown(filteredOptions);
     }
 
-    public int GetSeachResult()
+public int GetSeachResult()
     {
         // DayRemove();
 
@@ -460,6 +486,7 @@ public class GameManager : MonoBehaviour
         CompanyData.Clear();
         dropdown.options.Clear();
         uniqueDictionary.Clear();
+        uniqueNameDictionary.Clear();
         string jdata = File.ReadAllText(filePath);
         string[] line = jdata.Substring(0, jdata.Length).Split('\n');
         for (int i = 0; i < line.Length; i++)
@@ -476,6 +503,7 @@ public class GameManager : MonoBehaviour
                 }
                 MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
                 CompanyData.Add(row[4]);
+                NameData.Add(row[1]);
             }
 
         }
@@ -489,6 +517,19 @@ public class GameManager : MonoBehaviour
             }
         }
         List<string> uniqueList = uniqueDictionary.Keys.ToList();
+        foreach (string item in uniqueList)
+        {
+            dropdown.options.Add(new Dropdown.OptionData(item));
+            Debug.Log(item);
+
+        } foreach (string item in NameData)
+        {
+            if (!uniqueNameDictionary.ContainsKey(item))
+            {
+                uniqueNameDictionary.Add(item, 0);
+            }
+        }
+        List<string> uniqueNList = uniqueNameDictionary.Keys.ToList();
         foreach (string item in uniqueList)
         {
             dropdown.options.Add(new Dropdown.OptionData(item));
