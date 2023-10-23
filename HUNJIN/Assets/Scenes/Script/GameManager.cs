@@ -74,6 +74,7 @@ public class GameManager : MonoBehaviour
     public Image Image2;
     public TextMeshProUGUI text1;
 
+    Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
 
     public static GameManager Instance
     {
@@ -119,7 +120,6 @@ public class GameManager : MonoBehaviour
         {
             CheckBoxs[i].SetActive(false);
         }
-        Load();
     }
 
     public int GetSeachResult()
@@ -156,7 +156,7 @@ public class GameManager : MonoBehaviour
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
         dropdown.value = index;
-        CompanySearch = index;
+       CompanySearch = index;
 
     }
     public void ResetData()
@@ -184,37 +184,13 @@ public class GameManager : MonoBehaviour
     {
         CheckBoxs[a].SetActive(true);
     }
-    List<string> RemoveDuplicates(List<string> inputList)
-    {
-        HashSet<string> uniqueElements = new HashSet<string>();
-        List<string> result = new List<string>();
-
-        foreach (var element in inputList)
-        {
-            // HashSet을 사용하여 중복된 항목을 걸러냄
-            if (uniqueElements.Add(element))
-            {
-                result.Add(element);
-            }
-        }
-
-        return result;
-    }
     public void TabClick(string tabName)
     {
         // if (tabName == "Subject" || tabName == "Material")
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
         SubjectNameSearch.text = "";
-        dropdown.options.Clear();
-        dropdown.options.Add(new Dropdown.OptionData("전체"));
-
-        List<string> uniqueList = RemoveDuplicates(CompanyData);
-        foreach (var item in uniqueList)
-        {
-            dropdown.options.Add(new Dropdown.OptionData(item));
-
-        }
+      
         OnDropdownEvent(0);
         if (!subfirst)
         {
@@ -279,51 +255,41 @@ public class GameManager : MonoBehaviour
 
         if(tabName != "Enrollment")
         StartCoroutine(Lookup(curType));
-        
-    }
-    // 전체,유진,천보,인창,청명
+        else
+        StartCoroutine(Lookup("All"));
 
-    public int ProductSearch()//
+    }
+    public int AAASearch()// 거래처 검색용
     {
         MySearchData.Clear();
 
         int count = 0;
-            for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            if (MyCompanyDatabase[i].CompanyName.Trim().ToLower().Contains(dropdown.options[dropdown.value].text.Trim().ToLower()))
             {
-                if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
-                {
-                    if (CompanySearch == 0)
-                    {
-                        MySearchData.Add(MyCompanyDatabase[i]);
-                        count++;
-                    }
-                    
-                    else if(CompanySearch == 1 && MyCompanyDatabase[i].CompanyName == "유진")
-                        {
-                            MySearchData.Add(MyCompanyDatabase[i]);
-                            count++;
-                        }
-                        else if(CompanySearch == 2 && MyCompanyDatabase[i].CompanyName == "천보")
-                        {
-                            MySearchData.Add(MyCompanyDatabase[i]);
-                            count++;
-                        }
-                        else if (CompanySearch == 3 && MyCompanyDatabase[i].CompanyName == "인창")
-                        {
-                            MySearchData.Add(MyCompanyDatabase[i]);
-                            count++;
-                        }
-                        else if (CompanySearch == 4 && MyCompanyDatabase[i].CompanyName == "청명")
-                        {
-                            MySearchData.Add(MyCompanyDatabase[i]);
-                            count++;
-                        }
-                        else if (CompanySearch == 5 && MyCompanyDatabase[i].CompanyName == "하나")
-                        {
-                            MySearchData.Add(MyCompanyDatabase[i]);
-                            count++;
-                        }
-                }
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
+
+            }
+        }
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+
+        return count;
+    }
+    public int ProductSearch()//텍스트 들어가는 검색
+    {
+        MySearchData.Clear();
+
+        int count = 0;
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+            {
+                    MySearchData.Add(MyCompanyDatabase[i]);
+                    count++;
+               
+            }
         }
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
@@ -402,15 +368,13 @@ public class GameManager : MonoBehaviour
         return count;
     }
     public int ALLDOTextSearch()
-    {
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName}).Distinct().ToList();
-        DoSearchData.Clear();
-        OnDropdownEvent(0);
+    {   MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
         int count = 0;
-        foreach (var obj in distPerson)
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
-            DoSearchData.Add(new CompanyList(count.ToString(), obj.SubjectName, "1", "1", "1", "1"));
-            count++;
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
         }
         AllSubjectCountText.text = "[" + count.ToString() + "/" + count.ToString() + "]";
         return count;
@@ -465,7 +429,8 @@ public class GameManager : MonoBehaviour
     {
         string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
 
-
+        if (DoSearchData.Count < id)
+            return jdata;
         jdata[0] = DoSearchData[id].Date;
         jdata[1] = DoSearchData[id].SubjectName;
         jdata[2] = DoSearchData[id].Release;
@@ -493,6 +458,8 @@ public class GameManager : MonoBehaviour
     {
         MyCompanyDatabase.Clear();
         CompanyData.Clear();
+        dropdown.options.Clear();
+        uniqueDictionary.Clear();
         string jdata = File.ReadAllText(filePath);
         string[] line = jdata.Substring(0, jdata.Length).Split('\n');
         for (int i = 0; i < line.Length; i++)
@@ -513,7 +480,22 @@ public class GameManager : MonoBehaviour
 
         }
         ResetData();
-        ScrollViewController.Instance.DoSearch();
+        dropdown.options.Add(new Dropdown.OptionData("전체"));
+        foreach (string item in CompanyData)
+        {
+            if (!uniqueDictionary.ContainsKey(item))
+            {
+                uniqueDictionary.Add(item, 0);
+            }
+        }
+        List<string> uniqueList = uniqueDictionary.Keys.ToList();
+        foreach (string item in uniqueList)
+        {
+            dropdown.options.Add(new Dropdown.OptionData(item));
+            Debug.Log(item);
+        }
+        if (curType != "Enrollment" && curType != "Main")
+                ScrollViewController.Instance.DoSearch();
     }
 
     // 여기서 부터   
