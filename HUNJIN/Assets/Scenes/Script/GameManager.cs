@@ -125,8 +125,8 @@ public class GameManager : MonoBehaviour
             CheckBoxs[i].SetActive(false);
         }
 
-        PopulateDropdown(NameData);
-        SubjectNameSearch.onValueChanged.AddListener(OnInputValueChanged);
+        //PopulateDropdown(NameData);
+        SubjectNameSearch.onValueChanged.AddListener(ScrollViewController.Instance.TextSearch);
     }
     private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
     {
@@ -190,12 +190,12 @@ public int GetSeachResult()
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
-        SubjectInput.text = "제품명";
-        ReleaseInput.text = "출고";
-        ReceivingInput.text = "입고";
+        SubjectInput.name = "제품명";
+        ReleaseInput.name = "출고";
+        ReceivingInput.name= "입고";
         CompanyDrop.captionText.text = "거래처";
         NoneDrop.captionText.text = "부서";
-        AllCount.text = "잔고";
+        AllCount.name = "잔고";
         if (Time.frameCount % 30 == 0)
         {
             System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
@@ -347,8 +347,24 @@ public int GetSeachResult()
         AllSubjectCountText.text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
 
         return count;
-    } 
+    }
+    public void ATextSearch(String text)
+    {
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+        int count = 0;
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            if (MyCompanyDatabase[i].SubjectName.Trim().Contains(text.Trim()))
+            {
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
+            }
+        }
+        SubjectNameSearch.text = text.Trim();
+        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
 
+    }
     public int TextSearch(String text) 
     {
         MySearchData.Clear();
@@ -520,6 +536,7 @@ public int GetSeachResult()
         foreach (string item in uniqueList)
         {
             dropdown.options.Add(new Dropdown.OptionData(item));
+            CompanyDrop.options.Add(new Dropdown.OptionData(item));
             Debug.Log(item);
 
         } foreach (string item in NameData)

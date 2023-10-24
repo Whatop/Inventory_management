@@ -325,7 +325,34 @@ public class ScrollViewController : MonoBehaviour
         reveprod += gameManager.MySearchData.Count;
         Inquiry();
     }
-
+    public void TextSearch(string over)
+    {
+            int c = uiObjects.FindAll(x => x.name == "Subject").Count;
+            gameManager.isSubject = true;
+            ResetId();
+            dont = true;
+            int count = gameManager.ProductSearch();
+            if (count > c - reveprod)
+            {
+                for (int i = 0; i < c - reveprod; i++)
+                {
+                    SpawnFromPool("Subject", transform.position);
+                }
+                reveprod = 0;
+            }
+            for (int i = 0; i < uiObjects.Count; i++)
+            {
+                uiObjects[i].gameObject.SetActive(false);
+            }
+            dont = false;
+            gameManager.isCompanyName = false;
+            for (int i = 0; i < count; i++)
+            {
+                SpawnFromPool("Subject", transform.position);
+            }
+            reveprod += gameManager.MySearchData.Count;
+            Inquiry();
+    }
     public void ReTextSearch(Text text)
     {
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
@@ -373,7 +400,6 @@ public class ScrollViewController : MonoBehaviour
         {
             uiObjects[i].gameObject.SetActive(false);
         }
-        Search();//@@ √º¿Œ¡ˆ
         Inquiry();
     }
 
