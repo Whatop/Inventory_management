@@ -331,7 +331,7 @@ public class ScrollViewController : MonoBehaviour
             gameManager.isSubject = true;
             ResetId();
             dont = true;
-            int count = gameManager.ProductSearch();
+            int count = gameManager.ProductSearch("");
             if (count > c - reveprod)
             {
                 for (int i = 0; i < c - reveprod; i++)

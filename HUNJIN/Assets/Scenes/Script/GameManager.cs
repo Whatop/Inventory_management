@@ -49,14 +49,19 @@ public class GameManager : MonoBehaviour
     string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";//전해업체
     string CodeURL = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
 
+    public TMP_InputField SubjectInput;
     // ENROLLMENT 
     public Dropdown CompanyDrop, NoneDrop;
-    public InputField DateInput, TimeInput, SubjectInput, ReleaseInput, ReceivingInput;
+    public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
     public List<string> CompanyData;
     public List<string> NameData;
+    public List<string> EnomData;
     Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
     Dictionary<string, int> uniqueNameDictionary = new Dictionary<string, int>();
+    public TextMeshProUGUI SearthResultText;
+
+    public Button[] EnomButtons;
 
     DateTime _dateTime;
     public int CompanyType; /// 건들면 코드 망가질수도 있음
@@ -108,6 +113,12 @@ public class GameManager : MonoBehaviour
     {
         SubjectNameSearch.text = "";
     }
+
+    public void searchButtonDown(int i)
+    {
+        SubjectInput.text = NameData[i];
+         
+    }
     public void Start()
     {
         isCompanyName = true;
@@ -127,6 +138,26 @@ public class GameManager : MonoBehaviour
 
         //PopulateDropdown(NameData);
         SubjectNameSearch.onValueChanged.AddListener(ScrollViewController.Instance.TextSearch);
+        
+        SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
+        // 여기 
+    }
+
+    void newSearchUpdate()
+    {
+        EnomButtons[0].gameObject.SetActive(false);
+        EnomButtons[1].gameObject.SetActive(false);
+        EnomButtons[2].gameObject.SetActive(false);
+        if (EnomData.Count != 0)
+        {
+            for (int i = 0; i < EnomData.Count; i++)
+            {
+                if (i == 3)
+                    break;
+
+                EnomButtons[i].gameObject.SetActive(true);
+            }
+        }
     }
     private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
     {
@@ -145,7 +176,12 @@ public class GameManager : MonoBehaviour
     private void OnInputValueChanged(string text)
     {
         List<string> filteredOptions = NameData.FindAll(option => option.StartsWith(text, System.StringComparison.OrdinalIgnoreCase));
-        PopulateDropdown(filteredOptions);
+        
+        for(int i= 0; i < 3 && NameData.Count > 0; i++)
+        {
+            EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = NameData[i];
+        }
+        newSearchUpdate();
     }
 
 public int GetSeachResult()
@@ -190,12 +226,12 @@ public int GetSeachResult()
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
-        SubjectInput.name = "제품명";
-        ReleaseInput.name = "출고";
-        ReceivingInput.name= "입고";
+        SubjectInput.text = "제품명";
+        ReleaseInput.text = "출고";
+        ReceivingInput.text = "입고";
         CompanyDrop.captionText.text = "거래처";
         NoneDrop.captionText.text = "부서";
-        AllCount.name = "잔고";
+        AllCount.text = "잔고";
         if (Time.frameCount % 30 == 0)
         {
             System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
@@ -280,9 +316,9 @@ public int GetSeachResult()
         }
 
         if(tabName != "Enrollment")
-        StartCoroutine(Lookup(curType));
+            StartCoroutine(Lookup(curType));
         else
-        StartCoroutine(Lookup("All"));
+            StartCoroutine(Lookup("All"));
 
     }
     public int AAASearch()// 거래처 검색용
@@ -318,6 +354,24 @@ public int GetSeachResult()
             }
         }
         AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+
+        return count;
+    }
+    public int ProductSearch(string text)//over 들어가는 검색
+    {
+        MySearchData.Clear();
+
+        int count = 0;
+        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        {
+            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+            {
+                    MySearchData.Add(MyCompanyDatabase[i]);
+                    count++;
+               
+            }
+        }
+        AllSubjectCountText.text = "";
 
         return count;
     }
@@ -500,6 +554,7 @@ public int GetSeachResult()
     {
         MyCompanyDatabase.Clear();
         CompanyData.Clear();
+        NameData.Clear();
         dropdown.options.Clear();
         uniqueDictionary.Clear();
         uniqueNameDictionary.Clear();
@@ -539,7 +594,8 @@ public int GetSeachResult()
             CompanyDrop.options.Add(new Dropdown.OptionData(item));
             Debug.Log(item);
 
-        } foreach (string item in NameData)
+        } 
+        foreach (string item in NameData)
         {
             if (!uniqueNameDictionary.ContainsKey(item))
             {
@@ -547,10 +603,9 @@ public int GetSeachResult()
             }
         }
         List<string> uniqueNList = uniqueNameDictionary.Keys.ToList();
-        foreach (string item in uniqueList)
+        foreach (string item in uniqueNList)
         {
-            dropdown.options.Add(new Dropdown.OptionData(item));
-            Debug.Log(item);
+            EnomData.Add(item);
         }
         if (curType != "Enrollment" && curType != "Main")
                 ScrollViewController.Instance.DoSearch();
