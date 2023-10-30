@@ -28,10 +28,12 @@ public class GameManager : MonoBehaviour
         return new HashSet<T>(list).ToList();
     }
 
+
     public bool isCompanyName;
     static GameManager inst;
     public TextAsset SubjectDatebase;
-
+    public int curScene;
+   
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
     public List<CompanyList> DoSearchData;
@@ -39,19 +41,31 @@ public class GameManager : MonoBehaviour
     public Animator animator;
 
     public string curType = "Main";
-    int curInt;
+
     public GameObject[] Scenes;
 
-
-    public TMP_InputField SubjectNameSearch;
-    string filePath;
-
-    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";//전해업체
+    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEdropdown[curScene].bXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";//전해업체
     string CodeURL = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
 
-    public TMP_InputField SubjectInput;
+    public int CompanyType;
+    public int CompanySearch;
+    private bool subfirst = true;
+    string filePath;
+    public bool isSubject = false;
+    public int SeachIndex = 1;
+
+    public TMP_InputField[] SubjectNameSearch;
+    public TextMeshProUGUI[] AllSubjectCountText;
+    public TextMeshProUGUI[] AllCount;
+    public GameObject[] CheckBoxs;
+    public Dropdown[] dropdown;
+    public Dropdown[] Searchdropdown;
+
+
     // ENROLLMENT 
     public Dropdown CompanyDrop, NoneDrop;
+    public Button[] EnomButtons;
+    public TMP_InputField SubjectInput;
     public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
     public List<string> CompanyData;
@@ -60,30 +74,6 @@ public class GameManager : MonoBehaviour
     Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
     Dictionary<string, int> uniqueNameDictionary = new Dictionary<string, int>();
     public TextMeshProUGUI SearthResultText;
-
-    public Button[] EnomButtons;
-
-    DateTime _dateTime;
-    public int CompanyType; /// 건들면 코드 망가질수도 있음
-    public int CompanySearch;
-    public TextMeshProUGUI AllSubjectCountText;
-    private bool subfirst = true;
-
-    public TextMeshProUGUI AllCount;
-    public GameObject[] CheckBoxs;
-    [SerializeField]
-    private Dropdown dropdown;
-    [SerializeField]
-    private Dropdown SearchDropdown;
-
-    public bool isSubject = false;
-
-    public int SeachIndex = 1;
-
-    public Image Image1;
-    public Image Image2;
-    public TextMeshProUGUI text1;
-
 
     public static GameManager Instance
     {
@@ -106,12 +96,12 @@ public class GameManager : MonoBehaviour
                 Scenes[i].gameObject.SetActive(false);
         }
         inst = this;
-        dropdown.onValueChanged.AddListener(OnDropdownEvent);
+        dropdown[curScene].onValueChanged.AddListener(OnDropdownEvent);
     }
 
     public void Resetdropdown()
     {
-        SubjectNameSearch.text = "";
+        SubjectNameSearch[curScene].text = "";
     }
 
     public void searchButtonDown(int i)
@@ -130,29 +120,28 @@ public class GameManager : MonoBehaviour
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         Date = DateInput.text;
         ReceivingTime = TimeInput.text;
-        AllSubjectCountText.text = "[" + DoSearchData.Count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
+        AllSubjectCountText[curScene].text = "[" + DoSearchData.Count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
         for (int i = 0; i < CheckBoxs.Length; i++)
         {
             CheckBoxs[i].SetActive(false);
         }
 
-        //PopulateDropdown(NameData);
-        SubjectNameSearch.onValueChanged.AddListener(ScrollViewController.Instance.TextSearch);
-        
+
         SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
         // 여기 
     }
 
     void newSearchUpdate()
     {
-        EnomButtons[0].gameObject.SetActive(false);
-        EnomButtons[1].gameObject.SetActive(false);
-        EnomButtons[2].gameObject.SetActive(false);
+        for (int i = 0; i < EnomButtons.Length; i++)
+        {
+        EnomButtons[i].gameObject.SetActive(false);
+        }
         if (EnomData.Count != 0)
         {
             for (int i = 0; i < EnomData.Count; i++)
             {
-                if (i == 3)
+                if (i == EnomButtons.Length)
                     break;
 
                 EnomButtons[i].gameObject.SetActive(true);
@@ -161,26 +150,32 @@ public class GameManager : MonoBehaviour
     }
     private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
     {
-        SearchDropdown.ClearOptions();
-        SearchDropdown.AddOptions(items);
+        Searchdropdown[curScene].ClearOptions();
+        Searchdropdown[curScene].AddOptions(items);
     }
     public void OnDropdd()
     {
-        int selectedIndex = SearchDropdown.value;
+        int selectedIndex = Searchdropdown[curScene].value;
 
         // 현재 선택된 옵션의 텍스트 얻기
-        string selectedText = SearchDropdown.options[selectedIndex].text;
+        string selectedText = Searchdropdown[curScene].options[selectedIndex].text;
 
-        SubjectNameSearch.text = selectedText;
+        SubjectNameSearch[curScene].text = selectedText;
     }
     private void OnInputValueChanged(string text)
     {
         List<string> filteredOptions = NameData.FindAll(option => option.StartsWith(text, System.StringComparison.OrdinalIgnoreCase));
-        
-        for(int i= 0; i < 3 && NameData.Count > 0; i++)
+
+        if (SubjectInput.text == "")
         {
-            EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = NameData[i];
+            filteredOptions.Clear();
         }
+
+        for (int i = 0; i < filteredOptions.Count && i < EnomButtons.Length; i++)
+        {
+            EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = filteredOptions[i];
+        }
+
         newSearchUpdate();
     }
 
@@ -217,7 +212,7 @@ public int GetSeachResult()
     }
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
-        dropdown.value = index;
+        dropdown[curScene].value = index;
        CompanySearch = index;
 
     }
@@ -225,13 +220,13 @@ public int GetSeachResult()
     {
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
-        AllSubjectCountText.text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
-        SubjectInput.text = "제품명";
-        ReleaseInput.text = "출고";
-        ReceivingInput.text = "입고";
+        AllSubjectCountText[curScene].text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
+        SubjectInput.text = "";
+        ReleaseInput.text = "";
+        ReceivingInput.text = "";
         CompanyDrop.captionText.text = "거래처";
         NoneDrop.captionText.text = "부서";
-        AllCount.text = "잔고";
+        AllCount[curScene].text = "";
         if (Time.frameCount % 30 == 0)
         {
             System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
@@ -251,14 +246,14 @@ public int GetSeachResult()
         // if (tabName == "Subject" || tabName == "Material")
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
-        SubjectNameSearch.text = "";
-      
+        SubjectNameSearch[curScene].text = "";
+
         OnDropdownEvent(0);
-        if (!subfirst)
-        {
+       if (!subfirst)
+       {
             ScrollViewController.Instance.UIObjectReset();
-            subfirst = true;
-        }
+       }
+
 
         curType = tabName;
         if (tabName != "None")
@@ -268,12 +263,11 @@ public int GetSeachResult()
             {
                 //Press, Welding, Assembly, All
                 case "Main": tabNum = 0; break;
-                case "All": tabNum = 1; ; break;
+                case "All": tabNum = 5; ; break;
                 case "Press": tabNum = 1; ; break;
                 case "Enrollment": tabNum = 2; break;
-                case "None": tabNum = 3; break;
-                case "Welding": tabNum = 1; break;
-                case "Assembly": tabNum = 1; break;
+                case "Welding": tabNum = 3; break;
+                case "Assembly": tabNum = 4; break;
             }
             for (int i = 0; i < Scenes.Length; i++)
             {
@@ -288,34 +282,28 @@ public int GetSeachResult()
                     }
                 }
             }
-
+            if (subfirst)
+                subfirst = false;
         }
         if (tabName == "Press")
         {
-            Image1.color = new Color(0.4273228f, 0.409434f, 1f); //OUT
-            Image2.color = new Color(0.5273228f, 0.409434f, 1f); // IN
-            text1.text = "유압 관리";
-        }
-        else if (tabName == "All")
-        {
-            Image1.color = new Color(0.03588462f, 0.5943396f, 0.04296107f); // OUT
-            Image2.color = new Color(0.3629665f, 0.8773585f, 0.1522962f);  // IN
-            text1.text = "모든제품 관리";
+            curScene = 0;
+            
+
         }
         else if (tabName == "Welding")
         {
-            Image1.color = new Color(0.9150943f, 0.2495712f, 0f); //OUT
-            Image2.color = new Color(0.9607844f, 0.3607843f, 0.1372549f); // IN
-            text1.text = "용접 관리";
+            curScene = 1;
         }
         else if (tabName == "Assembly")
         {
-            Image1.color = new Color(0.8207547f, 0.1664738f, 0.5439883f); //OUT
-            Image2.color = new Color(0.8607844f, 0.13607843f, 0.1372549f); // IN
-            text1.text = "조립 관리";
+            curScene = 2;
         }
-
-        if(tabName != "Enrollment")
+        else if (tabName == "All")
+        {
+            curScene = 3;
+        }
+        if (tabName != "Enrollment")
             StartCoroutine(Lookup(curType));
         else
             StartCoroutine(Lookup("All"));
@@ -328,14 +316,14 @@ public int GetSeachResult()
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
-            if (MyCompanyDatabase[i].CompanyName.Trim().ToLower().Contains(dropdown.options[dropdown.value].text.Trim().ToLower()))
+            if (MyCompanyDatabase[i].CompanyName.Trim().ToLower().Contains(dropdown[curScene].options[dropdown[curScene].value].text.Trim().ToLower()))
             {
                 MySearchData.Add(MyCompanyDatabase[i]);
                 count++;
 
             }
         }
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
         return count;
     }
@@ -346,14 +334,14 @@ public int GetSeachResult()
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
-            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
                     MySearchData.Add(MyCompanyDatabase[i]);
                     count++;
                
             }
         }
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
         return count;
     }
@@ -364,14 +352,14 @@ public int GetSeachResult()
         int count = 0;
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
-            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
                     MySearchData.Add(MyCompanyDatabase[i]);
                     count++;
                
             }
         }
-        AllSubjectCountText.text = "";
+        AllSubjectCountText[curScene].text = "";
 
         return count;
     }
@@ -390,7 +378,7 @@ public int GetSeachResult()
         {
             for (int i = 0; i < DoSearchData.Count; i++)
             {
-                if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch.text.Trim().ToLower()))
+                if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
                 {
                     MySearchData.Add(DoSearchData[i]);
                     count++;
@@ -398,7 +386,7 @@ public int GetSeachResult()
             }
         }
 
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
 
         return count;
     }
@@ -415,8 +403,8 @@ public int GetSeachResult()
                 count++;
             }
         }
-        SubjectNameSearch.text = text.Trim();
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
+        SubjectNameSearch[curScene].text = text.Trim();
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
 
     }
     public int TextSearch(String text) 
@@ -432,8 +420,8 @@ public int GetSeachResult()
                 count++;
             }
         }
-        SubjectNameSearch.text = text.Trim();
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
+        SubjectNameSearch[curScene].text = text.Trim();
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
 
         return count;
     }
@@ -451,8 +439,8 @@ public int GetSeachResult()
             }
         }
 
-        SubjectNameSearch.text = text.Trim();
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + count.ToString() + "]";
+        SubjectNameSearch[curScene].text = text.Trim();
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
         int dex = 0;
         for (int i = 0; i < count; i++)
         {
@@ -472,7 +460,7 @@ public int GetSeachResult()
                 MySearchData.Add(MyCompanyDatabase[i]);
                 count++;
         }
-        AllSubjectCountText.text = "[" + count.ToString() + "/" + count.ToString() + "]";
+        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
         return count;
     }
     public int GetSubjectRemaining(int id)
@@ -493,15 +481,15 @@ public int GetSeachResult()
             }
             if (dex < 0)
             {
-                AllCount.text = MySearchData[0].SubjectName.Trim() + " - 회수 예정 : " + dex.ToString();
+                AllCount[curScene].text = MySearchData[0].SubjectName.Trim() + " - 재고 부족 : " + dex.ToString();
             }
             else if (dex > 0)
             {
-                AllCount.text = MySearchData[0].SubjectName.Trim() + " - 회수 초과 : " + dex.ToString();
+                AllCount[curScene].text = MySearchData[0].SubjectName.Trim() + " - 현재 재고 : " + dex.ToString();
             }
             else
             {
-                AllCount.text = " - 회수분 모두 수거완료 : " + dex.ToString();
+                AllCount[curScene].text = " - 재고 부족 : " + dex.ToString();
             }
 
         }
@@ -555,7 +543,7 @@ public int GetSeachResult()
         MyCompanyDatabase.Clear();
         CompanyData.Clear();
         NameData.Clear();
-        dropdown.options.Clear();
+        dropdown[curScene].options.Clear();
         uniqueDictionary.Clear();
         uniqueNameDictionary.Clear();
         string jdata = File.ReadAllText(filePath);
@@ -579,7 +567,7 @@ public int GetSeachResult()
 
         }
         ResetData();
-        dropdown.options.Add(new Dropdown.OptionData("전체"));
+        dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
         foreach (string item in CompanyData)
         {
             if (!uniqueDictionary.ContainsKey(item))
@@ -590,7 +578,7 @@ public int GetSeachResult()
         List<string> uniqueList = uniqueDictionary.Keys.ToList();
         foreach (string item in uniqueList)
         {
-            dropdown.options.Add(new Dropdown.OptionData(item));
+            dropdown[curScene].options.Add(new Dropdown.OptionData(item));
             CompanyDrop.options.Add(new Dropdown.OptionData(item));
             Debug.Log(item);
 

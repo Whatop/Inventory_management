@@ -61,7 +61,7 @@ public class Subject : MonoBehaviour
                 }
                 else
                 {
-                    SetArrowInfo(Color.black, "", "");
+                    SetArrowInfo(Color.black, "´ë±â", "???");
                 }
 
                 ShowAllSubjectCountText();
@@ -107,8 +107,8 @@ public class Subject : MonoBehaviour
 
     private void ShowAllSubjectCountText()
     {
-        GameManager.Instance.AllSubjectCountText.gameObject.SetActive(true);
-        GameManager.Instance.AllCount.gameObject.SetActive(true);
+        GameManager.Instance.AllSubjectCountText[GameManager.Instance.curScene].gameObject.SetActive(true);
+        GameManager.Instance.AllCount[GameManager.Instance.curScene].gameObject.SetActive(true);
     }
 
     public void SearchButton(Text text)

@@ -12,6 +12,7 @@ public class DropDownChange : MonoBehaviour
 
     void Awake()
     {
+        
         dropdown.onValueChanged.AddListener(OnDropdownEvent);
     }
 

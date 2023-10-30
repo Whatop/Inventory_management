@@ -16,7 +16,6 @@ public class SubjectCompany : MonoBehaviour
     private int myId;
 
     bool First = false;
-    bool Se = false;
 
     private void OnDisable()
     {
