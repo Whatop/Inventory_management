@@ -33,7 +33,8 @@ public class GameManager : MonoBehaviour
     static GameManager inst;
     public TextAsset SubjectDatebase;
     public int curScene;
-   
+
+    public GameObject main;
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
     public List<CompanyList> DoSearchData;
@@ -96,7 +97,8 @@ public class GameManager : MonoBehaviour
                 Scenes[i].gameObject.SetActive(false);
         }
         inst = this;
-        dropdown[curScene].onValueChanged.AddListener(OnDropdownEvent);
+        for(int i = 0; i< 4; i++)
+        dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
     }
 
     public void Resetdropdown()
@@ -227,6 +229,7 @@ public int GetSeachResult()
         CompanyDrop.captionText.text = "거래처";
         NoneDrop.captionText.text = "부서";
         AllCount[curScene].text = "";
+        //main.SetActive(false);
         if (Time.frameCount % 30 == 0)
         {
             System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
@@ -249,13 +252,12 @@ public int GetSeachResult()
         SubjectNameSearch[curScene].text = "";
 
         OnDropdownEvent(0);
-       if (!subfirst)
-       {
+        if (!subfirst && curType != "Main" && curType != "Enrollment")
+        {
             ScrollViewController.Instance.UIObjectReset();
-       }
+        }
 
 
-        curType = tabName;
         if (tabName != "None")
         {
             int tabNum = 5;
@@ -285,28 +287,40 @@ public int GetSeachResult()
             if (subfirst)
                 subfirst = false;
         }
-        if (tabName == "Press")
-        {
-            curScene = 0;
-            
 
-        }
-        else if (tabName == "Welding")
+        if (tabName != "Enrollment" && tabName != "Main")
         {
-            curScene = 1;
+            StartCoroutine(Lookup(tabName));
+            main.SetActive(true);
         }
-        else if (tabName == "Assembly")
-        {
-            curScene = 2;
-        }
-        else if (tabName == "All")
-        {
-            curScene = 3;
-        }
-        if (tabName != "Enrollment")
-            StartCoroutine(Lookup(curType));
         else
-            StartCoroutine(Lookup("All"));
+        {
+            if(tabName== "Enrollment")
+                StartCoroutine(Lookup("All"));
+
+            main.SetActive(false);
+        }
+        switch (tabName)
+        {
+            case "Press":
+                curScene = 0;
+                break;
+            case "Welding":
+                curScene = 1;
+                break;
+            case "Assembly":
+                curScene = 2;
+                break;
+            case "All":
+                curScene = 3;
+                break;
+            default: //main 이거나 enrollment 일떄 또는 none
+                curScene = 0;
+                break;
+        }
+ 
+
+        curType = tabName;
 
     }
     public int AAASearch()// 거래처 검색용
@@ -332,6 +346,9 @@ public int GetSeachResult()
         MySearchData.Clear();
 
         int count = 0;
+        if (SubjectNameSearch[curScene].text == "")
+            return count;
+
         for (int i = 0; i < MyCompanyDatabase.Count; i++)
         {
             if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))

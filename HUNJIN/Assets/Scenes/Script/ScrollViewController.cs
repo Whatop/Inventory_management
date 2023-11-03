@@ -38,6 +38,8 @@
         bool first;
         public int reveprod = 0;
 
+    //유압, 용접, 조립, 전체
+
         [Serializable]
         public class Pool
         {
@@ -187,9 +189,10 @@
                 else if (poolDictionary[pool.tag].Count != pool.size)
                     Debug.LogError($"{pool.tag}에 ReturnToPool이 중복됩니다");
             }
-        }
+        Invoke("Init", 0.1f);
+    }
 
-        GameObject CreateNewObject(string tag, GameObject prefab)
+    GameObject CreateNewObject(string tag, GameObject prefab)
         {
             var obj = Instantiate(prefab, scrollRect.content).GetComponent<RectTransform>();
             obj.name = tag;
@@ -296,7 +299,8 @@
             Inquiry();
         }
 
-        public void TextSearch(Text text)
+  
+    public void TextSearch(Text text)
         {
             int c = uiObjects.FindAll(x => x.name == "Subject").Count;
             gameManager.isSubject = true;
@@ -356,9 +360,9 @@
 
         public void DoSearch()
         {
-            GameManager.Instance.OnDropdownEvent(0);
-            GameManager.Instance.AllSubjectCountText[GameManager.Instance.curScene].gameObject.SetActive(false);
-            GameManager.Instance.AllCount[GameManager.Instance.curScene].gameObject.SetActive(false);
+            gameManager.OnDropdownEvent(0);
+            gameManager.AllSubjectCountText[gameManager.curScene].gameObject.SetActive(false);
+        gameManager.AllCount[GameManager.Instance.curScene].gameObject.SetActive(false);
             gameManager.isSubject = false;
             ResetId();
             if (!first)
