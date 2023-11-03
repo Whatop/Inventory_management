@@ -34,6 +34,11 @@ public class GameManager : MonoBehaviour
     public TextAsset SubjectDatebase;
     public int curScene;
 
+    //Subject 관리함수
+    public bool isSed;
+    public bool isSubject = false;
+
+
     public GameObject main;
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
@@ -52,7 +57,6 @@ public class GameManager : MonoBehaviour
     public int CompanySearch;
     private bool subfirst = true;
     string filePath;
-    public bool isSubject = false;
     public int SeachIndex = 1;
 
     public TMP_InputField[] SubjectNameSearch;
@@ -108,8 +112,11 @@ public class GameManager : MonoBehaviour
 
     public void searchButtonDown(int i)
     {
-        SubjectInput.text = NameData[i];
-         
+        SubjectInput.text = EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text;
+        for (int a = 0; a< EnomButtons.Length; a++)
+        {
+            EnomButtons[a].gameObject.SetActive(false);
+        }
     }
     public void Start()
     {
@@ -139,7 +146,7 @@ public class GameManager : MonoBehaviour
         {
         EnomButtons[i].gameObject.SetActive(false);
         }
-        if (EnomData.Count != 0)
+        if (EnomData.Count != 0 && SubjectInput.text != "")
         {
             for (int i = 0; i < EnomData.Count; i++)
             {
@@ -270,6 +277,7 @@ public int GetSeachResult()
                 case "Enrollment": tabNum = 2; break;
                 case "Welding": tabNum = 3; break;
                 case "Assembly": tabNum = 4; break;
+                case "Lost": tabNum = 6; break;
             }
             for (int i = 0; i < Scenes.Length; i++)
             {
@@ -290,12 +298,15 @@ public int GetSeachResult()
 
         if (tabName != "Enrollment" && tabName != "Main")
         {
+                if (tabName == "Lost")
+                StartCoroutine(Lookup("All"));
+                else
             StartCoroutine(Lookup(tabName));
             main.SetActive(true);
         }
         else
         {
-            if(tabName== "Enrollment")
+            if(tabName== "Enrollment"  )
                 StartCoroutine(Lookup("All"));
 
             main.SetActive(false);
@@ -314,7 +325,7 @@ public int GetSeachResult()
             case "All":
                 curScene = 3;
                 break;
-            default: //main 이거나 enrollment 일떄 또는 none
+            default: //main 이거나 enrollment 추가됨!,Lost 일떄 또는 none
                 curScene = 0;
                 break;
         }
@@ -382,64 +393,28 @@ public int GetSeachResult()
     }
     public int SEadSearch()//요약검색
     {
+        isSed = true;
         var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName }).Distinct().ToList();
-        DoSearchData.Clear();
+        MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
         foreach (var obj in distPerson)
         {
-            DoSearchData.Add(new CompanyList(count.ToString(), obj.SubjectName, "1", "1", "1", "1"));
+            // "22", "22", "22", "22", "22", "22", "22" 
+            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", "arr", "10:10"));
+            count++;
         }
 
-        if (CompanyType == 0)
-        {
-            for (int i = 0; i < DoSearchData.Count; i++)
-            {
-                if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-                {
-                    MySearchData.Add(DoSearchData[i]);
-                    count++;
-                }
-            }
-        }
-
+            //for (int i = 0; i < DoSearchData.Count; i++)
+            //{
+            //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
+            //    {
+            //        MySearchData.Add(DoSearchData[i]);
+            //        count++;
+            //    }
+            //}
+       
         AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
-
-        return count;
-    }
-    public void ATextSearch(String text)
-    {
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
-        {
-            if (MyCompanyDatabase[i].SubjectName.Trim().Contains(text.Trim()))
-            {
-                MySearchData.Add(MyCompanyDatabase[i]);
-                count++;
-            }
-        }
-        SubjectNameSearch[curScene].text = text.Trim();
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
-
-    }
-    public int TextSearch(String text) 
-    {
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
-        {
-            if (MyCompanyDatabase[i].SubjectName.Trim().Contains(text.Trim()))
-            {
-                MySearchData.Add(MyCompanyDatabase[i]);
-                count++;
-            }
-        }
-        SubjectNameSearch[curScene].text = text.Trim();
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + GetSeachResult() + "]";
-
         return count;
     }
     public int DOTextSearch(String text)
@@ -468,7 +443,7 @@ public int GetSeachResult()
         }
         return count;
     }
-    public int ALLDOTextSearch()
+    public int LostTextSearch() // Lost
     {   MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
@@ -612,8 +587,10 @@ public int GetSeachResult()
         {
             EnomData.Add(item);
         }
-        if (curType != "Enrollment" && curType != "Main")
+        if (curType != "Enrollment" && curType != "Main" && curType!= "Lost")
                 ScrollViewController.Instance.DoSearch();
+        else if (curType == "Lost")
+                ScrollViewController.Instance.LostSearch();
     }
 
     // 여기서 부터   

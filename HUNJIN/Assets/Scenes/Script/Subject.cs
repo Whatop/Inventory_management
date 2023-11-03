@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,20 +12,22 @@ public class Subject : MonoBehaviour
     public Image image;
     public Sprite[] Sprites;
     [SerializeField] private int myId;
-    private bool First = false;
+
+    //문제점 생성이 2번되서 200, 202가 안보임
 
     private void OnDisable()
     {
-        if (!First)
-            myId = ScrollViewController.Instance.GetId();
+        myId = -99;
         ScrollViewController.ReturnToPool(gameObject);
-        First = true;
     }
 
     private void OnEnable()
     {
         if (!ScrollViewController.Instance.dont)
         {
+            if(myId == -99)
+            myId = ScrollViewController.Instance.GetId(); // GetId() 함수를 한 번 호출하고 그 값을 myId 변수에 저장
+
             if (GameManager.Instance.MySearchData.Count != 0)
             {
                 if (GameManager.Instance.isSubject)
@@ -34,13 +35,18 @@ public class Subject : MonoBehaviour
                     image.gameObject.SetActive(true);
                     SubjectDate.gameObject.SetActive(true);
                     SubjectReceiving.gameObject.SetActive(true);
+                    Remaining.gameObject.SetActive(true);
+                    SubjectName.gameObject.SetActive(true);
                 }
                 else
                 {
+                    image.gameObject.SetActive(true);
+                    SubjectDate.gameObject.SetActive(true);
                     SubjectReceiving.gameObject.SetActive(false);
+                    Remaining.gameObject.SetActive(true);
+                    SubjectName.gameObject.SetActive(true);
                 }
 
-                myId = ScrollViewController.Instance.GetId();
                 string[] searchSubject = GameManager.Instance.GetSearch(myId);
 
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
@@ -50,7 +56,6 @@ public class Subject : MonoBehaviour
                 {
                     SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
                 }
-
                 if (int.Parse(searchSubject[3].Trim()) > 0)
                 {
                     SetArrowInfo(Color.blue, "출고", searchSubject[3].Trim());
@@ -62,6 +67,13 @@ public class Subject : MonoBehaviour
                 else
                 {
                     SetArrowInfo(Color.black, "대기", "???");
+                }
+
+                if (GameManager.Instance.isSed)
+                {
+                    SubjectReceiving.gameObject.SetActive(false);
+                    SubjectDate.gameObject.SetActive(false);
+                    SetArrowInfo(Color.black, myId.ToString(), "회사");
                 }
 
                 ShowAllSubjectCountText();
@@ -94,7 +106,7 @@ public class Subject : MonoBehaviour
             if (int.Parse(SubjectDate.text) % 2 == 0)
             {
                 image.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f); // carrot
-               // SubjectName.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f);
+                // SubjectName.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f);
             }
             else
             {
