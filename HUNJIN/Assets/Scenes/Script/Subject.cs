@@ -56,17 +56,31 @@ public class Subject : MonoBehaviour
                 {
                     SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
                 }
-                if (int.Parse(searchSubject[3].Trim()) > 0)
+                if(GameManager.Instance.curType == "Lost")
                 {
-                    SetArrowInfo(Color.blue, "출고", searchSubject[3].Trim());
-                }
-                else if (int.Parse(searchSubject[2].Trim()) > 0)
-                {
-                    SetArrowInfo(Color.red, "입고", searchSubject[2].Trim());
+                    if (int.Parse(searchSubject[3].Trim()) > 0)
+                    {
+                        SetArrowInfo(Color.blue, "재고", searchSubject[3].Trim());
+                    }
+                    else
+                    {
+                        SetArrowInfo(Color.black, "대기", "???");
+                    }
                 }
                 else
                 {
-                    SetArrowInfo(Color.black, "대기", "???");
+                    if (int.Parse(searchSubject[3].Trim()) > 0)
+                    {
+                        SetArrowInfo(Color.blue, "출고", searchSubject[3].Trim());
+                    }
+                    else if (int.Parse(searchSubject[2].Trim()) > 0)
+                    {
+                        SetArrowInfo(Color.red, "입고", searchSubject[2].Trim());
+                    }
+                    else
+                    {
+                        SetArrowInfo(Color.black, "대기", "???");
+                    }
                 }
 
                 if (GameManager.Instance.isSed)

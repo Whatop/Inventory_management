@@ -298,9 +298,6 @@ public int GetSeachResult()
 
         if (tabName != "Enrollment" && tabName != "Main")
         {
-                if (tabName == "Lost")
-                StartCoroutine(Lookup("All"));
-                else
             StartCoroutine(Lookup(tabName));
             main.SetActive(true);
         }
@@ -592,7 +589,70 @@ public int GetSeachResult()
         else if (curType == "Lost")
                 ScrollViewController.Instance.LostSearch();
     }
+    public void LostLoad()
+    {
+        MyCompanyDatabase.Clear();
+        CompanyData.Clear();
+        NameData.Clear();
+        dropdown[curScene].options.Clear();
+        uniqueDictionary.Clear();
+        uniqueNameDictionary.Clear();
+        string jdata = File.ReadAllText(filePath);
+        string[] line = jdata.Substring(0, jdata.Length).Split('\n');
+        for (int i = 0; i < line.Length; i++)
+        {
+            string[] row = line[i].Split('\t');
+            if (row.Length > 5)
+            {
+                for (int j = 0; j < 6; j++)
+                {
+                    if (row[j] == "")
+                    {
+                        row[j] = "0";
+                    }
+                }
+                int a = int.Parse(row[2]);
+                int b = int.Parse(row[3]);
+                int c = b - a;
+                if (c <= 0)
+                    MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace("-", "/"), Math.Abs(c).ToString(), "0", row[4], "None"));
 
+                CompanyData.Add(row[4]);
+                NameData.Add(row[1]);
+            }
+
+        }
+        ResetData();
+        dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
+        foreach (string item in CompanyData)
+        {
+            if (!uniqueDictionary.ContainsKey(item))
+            {
+                uniqueDictionary.Add(item, 0);
+            }
+        }
+        List<string> uniqueList = uniqueDictionary.Keys.ToList();
+        foreach (string item in uniqueList)
+        {
+            dropdown[curScene].options.Add(new Dropdown.OptionData(item));
+            CompanyDrop.options.Add(new Dropdown.OptionData(item));
+            Debug.Log(item);
+
+        }
+        foreach (string item in NameData)
+        {
+            if (!uniqueNameDictionary.ContainsKey(item))
+            {
+                uniqueNameDictionary.Add(item, 0);
+            }
+        }
+        List<string> uniqueNList = uniqueNameDictionary.Keys.ToList();
+        foreach (string item in uniqueNList)
+        {
+            EnomData.Add(item);
+        }
+            ScrollViewController.Instance.LostSearch();
+    }
     // 여기서 부터   
     bool SetIDPass()
     {
@@ -654,6 +714,8 @@ public int GetSeachResult()
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:Q";
          else if (curType == "Assembly")
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:Q";
+        else if (curType == "Lost")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=632245483&range=A2:G";
         
         UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
 
@@ -662,7 +724,11 @@ public int GetSeachResult()
         if (www.isDone)
         {
             File.WriteAllText(filePath, www.downloadHandler.text);
-            Load();
+       
+            if(curType == "Lost")
+            LostLoad();
+            else
+                Load();
             //animator.SetTrigger("End");
         }
 
