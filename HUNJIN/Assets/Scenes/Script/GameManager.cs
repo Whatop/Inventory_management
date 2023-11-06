@@ -65,7 +65,13 @@ public class GameManager : MonoBehaviour
     public GameObject[] CheckBoxs;
     public Dropdown[] dropdown;
     public Dropdown[] Searchdropdown;
-
+    // SearchScene
+    public int Curpage = 0;
+    private int Maxpage = 1;
+    public int PageObject = 10;
+    public GameObject LeftArrow;
+    public GameObject RightArrow;
+    bool isArrow = false;
 
     // ENROLLMENT 
     public Dropdown CompanyDrop, NoneDrop;
@@ -227,6 +233,8 @@ public int GetSeachResult()
     }
     public void ResetData()
     {
+        isArrow = true;
+        Curpage = 0;
         DateInput.text = DateTime.Now.ToString("yy/M/d");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
         AllSubjectCountText[curScene].text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
@@ -237,10 +245,10 @@ public int GetSeachResult()
         NoneDrop.captionText.text = "부서";
         AllCount[curScene].text = "";
         //main.SetActive(false);
-        if (Time.frameCount % 30 == 0)
-        {
-            System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
-        }
+        //if (Time.frameCount % 30 == 0)
+        //{
+        //    System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
+        //}
         isCompanyName = true;
     }
     public void CheckBoxF(int a)
@@ -257,7 +265,7 @@ public int GetSeachResult()
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
         SubjectNameSearch[curScene].text = "";
-
+        ResetData();
         OnDropdownEvent(0);
         if (!subfirst && curType != "Main" && curType != "Enrollment")
         {
@@ -324,6 +332,7 @@ public int GetSeachResult()
                 break;
             default: //main 이거나 enrollment 추가됨!,Lost 일떄 또는 none
                 curScene = 0;
+                isArrow = false;
                 break;
         }
  
@@ -367,6 +376,7 @@ public int GetSeachResult()
             }
         }
         AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
+        isArrow = false;
 
         return count;
     }
@@ -385,33 +395,58 @@ public int GetSeachResult()
             }
         }
         AllSubjectCountText[curScene].text = "";
+        isArrow = false;
 
         return count;
     }
+    public void NextPage()
+    {
+        if(Curpage < Maxpage)
+        Curpage++;
+    }
+
+    public void PrevPage()
+    {
+        if (Curpage > 0)
+            Curpage--;
+    }
+
     public int SEadSearch()//요약검색
     {
+        isArrow = true;
         isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName }).Distinct().ToList();
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
+        int saveCount = 0;
         foreach (var obj in distPerson)
         {
             // "22", "22", "22", "22", "22", "22", "22" 
-            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", "arr", "10:10"));
+            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
             count++;
         }
 
-            //for (int i = 0; i < DoSearchData.Count; i++)
-            //{
-            //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-            //    {
-            //        MySearchData.Add(DoSearchData[i]);
-            //        count++;
-            //    }
-            //}
-       
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
+        saveCount = count;
+        count /= PageObject;
+        Maxpage = count ;
+        count = PageObject;
+        if (Maxpage == Curpage)
+        {
+            saveCount %= PageObject;
+            count = saveCount ;
+        }
+        //for (int i = 0; i < DoSearchData.Count; i++)
+        //{
+        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
+        //    {
+        //        MySearchData.Add(DoSearchData[i]);
+        //        count++;
+        //    }
+        //}
+       int TextUI = Curpage + 1;
+       int MaxTextUI= Maxpage + 1;
+                AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
         return count;
     }
     public int DOTextSearch(String text)
@@ -761,5 +796,7 @@ public int GetSeachResult()
                 Exit();
             }
         }
+        LeftArrow.SetActive(isArrow);
+        RightArrow.SetActive(isArrow);
     }
 }

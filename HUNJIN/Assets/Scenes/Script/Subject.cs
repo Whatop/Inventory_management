@@ -30,6 +30,8 @@ public class Subject : MonoBehaviour
 
             if (GameManager.Instance.MySearchData.Count != 0)
             {
+                int searchCount = 0;
+                string[] searchSubject;
                 if (GameManager.Instance.isSubject)
                 {
                     image.gameObject.SetActive(true);
@@ -46,9 +48,17 @@ public class Subject : MonoBehaviour
                     Remaining.gameObject.SetActive(true);
                     SubjectName.gameObject.SetActive(true);
                 }
+                if (GameManager.Instance.isSed)
+                {
+                    searchCount = myId + GameManager.Instance.Curpage * GameManager.Instance.PageObject + 1;
+                    searchSubject = GameManager.Instance.GetSearch(searchCount - 1);
+                }
+                else
+                {
 
-                string[] searchSubject = GameManager.Instance.GetSearch(myId);
-
+                    searchCount = myId ;
+                    searchSubject = GameManager.Instance.GetSearch(searchCount);
+                }
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = searchSubject[1].Trim();
 
@@ -87,7 +97,7 @@ public class Subject : MonoBehaviour
                 {
                     SubjectReceiving.gameObject.SetActive(false);
                     SubjectDate.gameObject.SetActive(false);
-                    SetArrowInfo(Color.black, myId.ToString(), "È¸»ç");
+                    SetArrowInfo(Color.black, searchCount.ToString(), searchSubject[4]);
                 }
 
                 ShowAllSubjectCountText();

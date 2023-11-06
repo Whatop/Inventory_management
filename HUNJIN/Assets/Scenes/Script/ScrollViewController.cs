@@ -357,7 +357,7 @@ public class ScrollViewController : MonoBehaviour
         reveprod += gameManager.MySearchData.Count;
         Inquiry();
     }
-
+  
     public void DoSearch()
     {
         gameManager.OnDropdownEvent(0);
