@@ -68,6 +68,7 @@ public class Subject : MonoBehaviour
                 }
                 if(GameManager.Instance.curType == "Lost")
                 {
+                    SubjectDate.gameObject.SetActive(false);
                     if (int.Parse(searchSubject[3].Trim()) > 0)
                     {
                         SetArrowInfo(Color.blue, "Àç°í", searchSubject[3].Trim());

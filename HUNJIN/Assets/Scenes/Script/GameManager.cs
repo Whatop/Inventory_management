@@ -308,6 +308,8 @@ public int GetSeachResult()
         {
             StartCoroutine(Lookup(tabName));
             main.SetActive(true);
+            if(tabName == "Lost")
+                StartCoroutine(Lookup("All"));
         }
         else
         {
@@ -327,7 +329,10 @@ public int GetSeachResult()
             case "Assembly":
                 curScene = 2;
                 break;
-            case "All":
+            case "All" :
+                curScene = 3;
+                break;
+            case "Lost":
                 curScene = 3;
                 break;
             default: //main 이거나 enrollment 추가됨!,Lost 일떄 또는 none
@@ -335,7 +340,6 @@ public int GetSeachResult()
                 isArrow = false;
                 break;
         }
- 
 
         curType = tabName;
 
@@ -479,9 +483,9 @@ public int GetSeachResult()
     {   MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        for (int i = 0; i < DoSearchData.Count; i++)
         {
-                MySearchData.Add(MyCompanyDatabase[i]);
+                MySearchData.Add(DoSearchData[i]);
                 count++;
         }
         AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
@@ -626,7 +630,7 @@ public int GetSeachResult()
     }
     public void LostLoad()
     {
-        MyCompanyDatabase.Clear();
+        DoSearchData.Clear();
         CompanyData.Clear();
         NameData.Clear();
         dropdown[curScene].options.Clear();
@@ -650,7 +654,7 @@ public int GetSeachResult()
                 int b = int.Parse(row[3]);
                 int c = b - a;
                 if (c <= 0)
-                    MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace("-", "/"), Math.Abs(c).ToString(), "0", row[4], "None"));
+                    DoSearchData.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace("-", "/"), Math.Abs(c).ToString(), "0", row[4], "None"));
 
                 CompanyData.Add(row[4]);
                 NameData.Add(row[1]);
@@ -761,7 +765,7 @@ public int GetSeachResult()
             File.WriteAllText(filePath, www.downloadHandler.text);
        
             if(curType == "Lost")
-            LostLoad();
+                 LostLoad();
             else
                 Load();
             //animator.SetTrigger("End");
@@ -796,7 +800,15 @@ public int GetSeachResult()
                 Exit();
             }
         }
-        LeftArrow.SetActive(isArrow);
-        RightArrow.SetActive(isArrow);
+        if (curType == "Lost")
+        {
+            LeftArrow.SetActive(false);
+            RightArrow.SetActive(false);
+        }
+        else
+        {
+            LeftArrow.SetActive(isArrow);
+            RightArrow.SetActive(isArrow);
+        }
     }
 }
