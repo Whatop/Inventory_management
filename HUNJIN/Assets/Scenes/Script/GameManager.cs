@@ -18,7 +18,13 @@ public class CompanyList
     public string Date, SubjectName = "None", Receiving = "0", Release = "0", CompanyName = "None", ReceivingTime = "";
 }
 
-
+[System.Serializable]
+public class NameCompanyList
+{
+    public NameCompanyList(string _Name, string _Company)
+    { Name = _Name; Company = _Company; }
+    public string Name = "테스트", Company = "테스트";
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -32,6 +38,7 @@ public class GameManager : MonoBehaviour
     public bool isCompanyName;
     static GameManager inst;
     public TextAsset SubjectDatebase;
+    public ScrollViewEnom scrollViewEnom;
     public int curScene;
 
     //Subject 관리함수
@@ -43,6 +50,7 @@ public class GameManager : MonoBehaviour
     public List<CompanyList> MyCompanyDatabase;
     public List<CompanyList> MySearchData;
     public List<CompanyList> DoSearchData;
+    public List<NameCompanyList> NameCompanyData;
 
     public Animator animator;
 
@@ -75,16 +83,15 @@ public class GameManager : MonoBehaviour
 
     // ENROLLMENT 
     public Dropdown CompanyDrop, NoneDrop;
-    public Button[] EnomButtons;
     public TMP_InputField SubjectInput;
     public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput;
     string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
     public List<string> CompanyData;
     public List<string> NameData;
     public List<string> EnomData;
-    Dictionary<string, int> uniqueDictionary = new Dictionary<string, int>();
-    Dictionary<string, int> uniqueNameDictionary = new Dictionary<string, int>();
-    public TextMeshProUGUI SearthResultText;
+    public List<string> curData;
+    public GameObject Loading;
+    public bool isloading;
 
     public static GameManager Instance
     {
@@ -107,8 +114,8 @@ public class GameManager : MonoBehaviour
                 Scenes[i].gameObject.SetActive(false);
         }
         inst = this;
-        for(int i = 0; i< 4; i++)
-        dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
+        for (int i = 0; i < 4; i++)
+            dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
     }
 
     public void Resetdropdown()
@@ -116,13 +123,15 @@ public class GameManager : MonoBehaviour
         SubjectNameSearch[curScene].text = "";
     }
 
+    public void SetLoading()
+    {
+        isloading = true;
+    }
     public void searchButtonDown(int i)
     {
-        SubjectInput.text = EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text;
-        for (int a = 0; a< EnomButtons.Length; a++)
-        {
-            EnomButtons[a].gameObject.SetActive(false);
-        }
+        SubjectInput.text = curData[i];
+        curData.Clear();
+        scrollViewEnom.UpdateScrollView();
     }
     public void Start()
     {
@@ -146,23 +155,6 @@ public class GameManager : MonoBehaviour
         // 여기 
     }
 
-    void newSearchUpdate()
-    {
-        for (int i = 0; i < EnomButtons.Length; i++)
-        {
-        EnomButtons[i].gameObject.SetActive(false);
-        }
-        if (EnomData.Count != 0 && SubjectInput.text != "")
-        {
-            for (int i = 0; i < EnomData.Count; i++)
-            {
-                if (i == EnomButtons.Length)
-                    break;
-
-                EnomButtons[i].gameObject.SetActive(true);
-            }
-        }
-    }
     private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
     {
         Searchdropdown[curScene].ClearOptions();
@@ -177,24 +169,24 @@ public class GameManager : MonoBehaviour
 
         SubjectNameSearch[curScene].text = selectedText;
     }
-    private void OnInputValueChanged(string text)
+    public void OnInputValueChanged(string text)
     {
-        List<string> filteredOptions = NameData.FindAll(option => option.StartsWith(text, System.StringComparison.OrdinalIgnoreCase));
-
-        if (SubjectInput.text == "")
+        curData.Clear();
+        int currentIndex = CompanyDrop.value;
+        for (int i = 0; i < NameCompanyData.Count; i++)
         {
-            filteredOptions.Clear();
+            if (CompanyDrop.options[currentIndex].text == NameCompanyData[i].Company)
+            {
+                if (NameCompanyData[i].Name.Trim().ToLower().Contains(SubjectInput.text.Trim().ToLower()))
+                    curData.Add(NameCompanyData[i].Name);
+            }
         }
 
-        for (int i = 0; i < filteredOptions.Count && i < EnomButtons.Length; i++)
-        {
-            EnomButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = filteredOptions[i];
-        }
 
-        newSearchUpdate();
+        scrollViewEnom.UpdateScrollView();
     }
 
-public int GetSeachResult()
+    public int GetSeachResult()
     {
         // DayRemove();
 
@@ -228,7 +220,7 @@ public int GetSeachResult()
     public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
     {
         dropdown[curScene].value = index;
-       CompanySearch = index;
+        CompanySearch = index;
 
     }
     public void ResetData()
@@ -241,7 +233,6 @@ public int GetSeachResult()
         SubjectInput.text = "";
         ReleaseInput.text = "";
         ReceivingInput.text = "";
-        CompanyDrop.captionText.text = "거래처";
         NoneDrop.captionText.text = "부서";
         AllCount[curScene].text = "";
         //main.SetActive(false);
@@ -261,6 +252,7 @@ public int GetSeachResult()
     }
     public void TabClick(string tabName)
     {
+        CompanyDrop.captionText.text = "거래처";
         // if (tabName == "Subject" || tabName == "Material")
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
@@ -308,12 +300,12 @@ public int GetSeachResult()
         {
             StartCoroutine(Lookup(tabName));
             main.SetActive(true);
-            if(tabName == "Lost")
+            if (tabName == "Lost")
                 StartCoroutine(Lookup("All"));
         }
         else
         {
-            if(tabName== "Enrollment"  )
+            if (tabName == "Enrollment")
                 StartCoroutine(Lookup("All"));
 
             main.SetActive(false);
@@ -329,7 +321,7 @@ public int GetSeachResult()
             case "Assembly":
                 curScene = 2;
                 break;
-            case "All" :
+            case "All":
                 curScene = 3;
                 break;
             case "Lost":
@@ -374,9 +366,9 @@ public int GetSeachResult()
         {
             if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
-                    MySearchData.Add(MyCompanyDatabase[i]);
-                    count++;
-               
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
+
             }
         }
         AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
@@ -393,9 +385,9 @@ public int GetSeachResult()
         {
             if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
-                    MySearchData.Add(MyCompanyDatabase[i]);
-                    count++;
-               
+                MySearchData.Add(MyCompanyDatabase[i]);
+                count++;
+
             }
         }
         AllSubjectCountText[curScene].text = "";
@@ -405,8 +397,8 @@ public int GetSeachResult()
     }
     public void NextPage()
     {
-        if(Curpage < Maxpage)
-        Curpage++;
+        if (Curpage < Maxpage)
+            Curpage++;
     }
 
     public void PrevPage()
@@ -433,12 +425,12 @@ public int GetSeachResult()
 
         saveCount = count;
         count /= PageObject;
-        Maxpage = count ;
+        Maxpage = count;
         count = PageObject;
         if (Maxpage == Curpage)
         {
             saveCount %= PageObject;
-            count = saveCount ;
+            count = saveCount;
         }
         //for (int i = 0; i < DoSearchData.Count; i++)
         //{
@@ -448,9 +440,9 @@ public int GetSeachResult()
         //        count++;
         //    }
         //}
-       int TextUI = Curpage + 1;
-       int MaxTextUI= Maxpage + 1;
-                AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
+        int TextUI = Curpage + 1;
+        int MaxTextUI = Maxpage + 1;
+        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
         return count;
     }
     public int DOTextSearch(String text)
@@ -480,13 +472,14 @@ public int GetSeachResult()
         return count;
     }
     public int LostTextSearch() // Lost
-    {   MySearchData.Clear();
+    {
+        MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
         for (int i = 0; i < DoSearchData.Count; i++)
         {
-                MySearchData.Add(DoSearchData[i]);
-                count++;
+            MySearchData.Add(DoSearchData[i]);
+            count++;
         }
         AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
         return count;
@@ -571,9 +564,9 @@ public int GetSeachResult()
         MyCompanyDatabase.Clear();
         CompanyData.Clear();
         NameData.Clear();
+        curData.Clear();
+        NameCompanyData.Clear();
         dropdown[curScene].options.Clear();
-        uniqueDictionary.Clear();
-        uniqueNameDictionary.Clear();
         string jdata = File.ReadAllText(filePath);
         string[] line = jdata.Substring(0, jdata.Length).Split('\n');
         for (int i = 0; i < line.Length; i++)
@@ -589,108 +582,37 @@ public int GetSeachResult()
                     }
                 }
                 MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
-                CompanyData.Add(row[4]);
-                NameData.Add(row[1]);
             }
 
         }
         ResetData();
+        var AehdIa = MyCompanyDatabase
+                    .GroupBy(person => person.SubjectName) // SubjectName을 기준으로 그룹화
+                    .Select(group => group.First())
+                    .Distinct()
+                    .ToList();
+        var AehdCompany = MyCompanyDatabase
+            .Select(person => person.CompanyName)
+            .Distinct()
+            .ToList();
+
         dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
-        foreach (string item in CompanyData)
+        foreach (var item in AehdIa)
         {
-            if (!uniqueDictionary.ContainsKey(item))
-            {
-                uniqueDictionary.Add(item, 0);
-            }
+            NameData.Add(item.SubjectName);
+            NameCompanyData.Add(new NameCompanyList(item.SubjectName, item.CompanyName));
         }
-        List<string> uniqueList = uniqueDictionary.Keys.ToList();
-        foreach (string item in uniqueList)
+        foreach (var item in AehdCompany)
         {
-            dropdown[curScene].options.Add(new Dropdown.OptionData(item));
-            CompanyDrop.options.Add(new Dropdown.OptionData(item));
-            Debug.Log(item);
-
-        } 
-        foreach (string item in NameData)
-        {
-            if (!uniqueNameDictionary.ContainsKey(item))
-            {
-                uniqueNameDictionary.Add(item, 0);
-            }
+            CompanyData.Add(item);
         }
-        List<string> uniqueNList = uniqueNameDictionary.Keys.ToList();
-        foreach (string item in uniqueNList)
+        for (int i = 0; i < CompanyData.Count; i++)
         {
-            EnomData.Add(item);
+            dropdown[curScene].options.Add(new Dropdown.OptionData(CompanyData[i]));
+            CompanyDrop.options.Add(new Dropdown.OptionData(CompanyData[i]));
         }
-        if (curType != "Enrollment" && curType != "Main" && curType!= "Lost")
-                ScrollViewController.Instance.DoSearch();
-        else if (curType == "Lost")
-                ScrollViewController.Instance.LostSearch();
-    }
-    public void LostLoad()
-    {
-        DoSearchData.Clear();
-        CompanyData.Clear();
-        NameData.Clear();
-        dropdown[curScene].options.Clear();
-        uniqueDictionary.Clear();
-        uniqueNameDictionary.Clear();
-        string jdata = File.ReadAllText(filePath);
-        string[] line = jdata.Substring(0, jdata.Length).Split('\n');
-        for (int i = 0; i < line.Length; i++)
-        {
-            string[] row = line[i].Split('\t');
-            if (row.Length > 5)
-            {
-                for (int j = 0; j < 6; j++)
-                {
-                    if (row[j] == "")
-                    {
-                        row[j] = "0";
-                    }
-                }
-                int a = int.Parse(row[2]);
-                int b = int.Parse(row[3]);
-                int c = b - a;
-                if (c <= 0)
-                    DoSearchData.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace("-", "/"), Math.Abs(c).ToString(), "0", row[4], "None"));
-
-                CompanyData.Add(row[4]);
-                NameData.Add(row[1]);
-            }
-
-        }
-        ResetData();
-        dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
-        foreach (string item in CompanyData)
-        {
-            if (!uniqueDictionary.ContainsKey(item))
-            {
-                uniqueDictionary.Add(item, 0);
-            }
-        }
-        List<string> uniqueList = uniqueDictionary.Keys.ToList();
-        foreach (string item in uniqueList)
-        {
-            dropdown[curScene].options.Add(new Dropdown.OptionData(item));
-            CompanyDrop.options.Add(new Dropdown.OptionData(item));
-            Debug.Log(item);
-
-        }
-        foreach (string item in NameData)
-        {
-            if (!uniqueNameDictionary.ContainsKey(item))
-            {
-                uniqueNameDictionary.Add(item, 0);
-            }
-        }
-        List<string> uniqueNList = uniqueNameDictionary.Keys.ToList();
-        foreach (string item in uniqueNList)
-        {
-            EnomData.Add(item);
-        }
-            ScrollViewController.Instance.LostSearch();
+        if (curType != "Enrollment" && curType != "Main" && curType != "Lost")
+            ScrollViewController.Instance.DoSearch();
     }
     // 여기서 부터   
     bool SetIDPass()
@@ -741,7 +663,14 @@ public int GetSeachResult()
         }
         Load();
     }
-
+    void StartLoading()
+    {
+        Loading.SetActive(true);
+    }
+    void EndLoading()
+    {
+        Loading.SetActive(false);
+    }
     IEnumerator Lookup(string curType)
     {
         //@@ 추가 Press, Welding, Assembly, All
@@ -751,23 +680,27 @@ public int GetSeachResult()
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";
         else if (curType == "Welding")
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:Q";
-         else if (curType == "Assembly")
+        else if (curType == "Assembly")
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:Q";
         else if (curType == "Lost")
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=632245483&range=A2:G";
-        
-        UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
 
+        UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
+        StartLoading();
         yield return www.SendWebRequest();
+        yield return new WaitForSeconds(0.35f);
 
         if (www.isDone)
         {
             File.WriteAllText(filePath, www.downloadHandler.text);
-       
-            if(curType == "Lost")
-                 LostLoad();
-            else
-                Load();
+            EndLoading();
+            if (isloading)
+            {
+                CheckBoxs[1].SetActive(true);
+                isloading = false;
+            }
+
+            Load();
             //animator.SetTrigger("End");
         }
 

@@ -34,6 +34,7 @@ public class ScrollViewController : MonoBehaviour
     public float space = 10f;
     public List<RectTransform> uiObjects = new List<RectTransform>();
     private int spId = -1;
+    private int enId = -1;
     public bool dont = false;
     bool first;
     public int reveprod = 0;
@@ -65,6 +66,16 @@ public class ScrollViewController : MonoBehaviour
     public void ResetId()
     {
         spId = -1;
+    }
+    public int GetEnId()
+    {
+        enId++;
+        return enId;
+    }
+
+    public void ResetEnId()
+    {
+        enId = -1;
     }
 
     public static ScrollViewController Instance
@@ -189,7 +200,6 @@ public class ScrollViewController : MonoBehaviour
             else if (poolDictionary[pool.tag].Count != pool.size)
                 Debug.LogError($"{pool.tag}에 ReturnToPool이 중복됩니다");
         }
-        Invoke("Init", 0.1f);
     }
 
     GameObject CreateNewObject(string tag, GameObject prefab)
@@ -361,7 +371,7 @@ public class ScrollViewController : MonoBehaviour
     public void DoSearch()
     {
         gameManager.OnDropdownEvent(0);
-
+        ResetEnId();
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
         gameManager.isSubject = false;
         ResetId();
