@@ -48,7 +48,7 @@ public class ScrollViewController : MonoBehaviour
         public GameObject prefab;
         public int size;
     }
-
+   
     [SerializeField] Pool[] pools;
     List<GameObject> spawnObjects;
     public Dictionary<string, Queue<GameObject>> poolDictionary;
@@ -241,7 +241,7 @@ public class ScrollViewController : MonoBehaviour
         }
     }
 
-    public void Search()
+    public void Search() // 요약검색으로 변경해야됨
     {
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
         gameManager.ResetData();
@@ -398,37 +398,6 @@ public class ScrollViewController : MonoBehaviour
         reveprod += gameManager.MySearchData.Count;
         Inquiry();
         gameManager.isSed = false;
-    }
-
-    public void LostSearch()
-    {
-        gameManager.OnDropdownEvent(0);
-        int c = uiObjects.FindAll(x => x.name == "Subject").Count;
-        gameManager.isSubject = false;
-        ResetId();
-        dont = true;
-        int count = gameManager.LostTextSearch();
-        if (count > c - reveprod)
-        {
-            for (int i = 0; i < c - reveprod; i++)
-            {
-                SpawnFromPool("Subject", transform.position);
-            }
-            reveprod = 0;
-        }
-        for (int i = 0; i < uiObjects.Count; i++)
-        {
-            uiObjects[i].gameObject.SetActive(false);
-        }
-        dont = false;
-        gameManager.isCompanyName = false;
-        for (int i = 0; i < count; i++)
-        {
-            SpawnFromPool("Subject", transform.position);
-        }
-        reveprod += gameManager.MySearchData.Count;
-        gameManager.isSed = false;
-        Inquiry();
     }
 
     void ArrangePool(GameObject obj)

@@ -23,7 +23,7 @@ public class ScrollViewEnom : MonoBehaviour
         instantiatedObjects.Clear();
 
         // MyNames 목록에 따라 프리팹 생성
-        float yPos = 127;
+        float yPos = 136;
         for (int i = 0; i < MyNames.Count; i++)
         {
             GameObject newObj = Instantiate(prefab, content);

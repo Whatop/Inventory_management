@@ -1,6 +1,6 @@
 m_ProjectFiles:
   m_ManifestFileStatus:
-    m_FilePath: C:/Users/MSI/Documents/GitHub/Sample/HUNJIN/Packages/manifest.json
+    m_FilePath: "C:/Users/MSI/Desktop/\uC0C8 \uD3F4\uB354 (2)/HUNJIN/Packages/manifest.json"
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
@@ -8,7 +8,7 @@ m_ProjectFiles:
       ticks: 638350207184209856
     m_Hash: 1447045606
   m_LockFileStatus:
-    m_FilePath: C:/Users/MSI/Documents/GitHub/Sample/HUNJIN/Packages/packages-lock.json
+    m_FilePath: "C:/Users/MSI/Desktop/\uC0C8 \uD3F4\uB354 (2)/HUNJIN/Packages/packages-lock.json"
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
@@ -25,7 +25,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 5.0.4
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.animation@5.0.4
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.animation@5.0.4"
       assetPath: Packages/com.unity.2d.animation
       name: com.unity.2d.animation
       displayName: 2D Animation
@@ -137,6 +137,7 @@ m_PackageAssets:
         - 7.0.10
         - 7.0.11
         - 7.0.12
+        - 7.0.13
         - 8.0.0-pre.3
         - 8.0.0-pre.4
         - 8.0.0
@@ -152,12 +153,14 @@ m_PackageAssets:
         - 9.0.2
         - 9.0.3
         - 9.0.4
+        - 9.1.0
         - 10.0.0-pre.1
         - 10.0.0-pre.2
         - 10.0.0
         - 10.0.1
         - 10.0.2
         - 10.0.3
+        - 10.1.0
         compatible:
         - 5.0.4
         - 5.0.5
@@ -225,7 +228,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 4.0.1
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.pixel-perfect@4.0.1
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.pixel-perfect@4.0.1"
       assetPath: Packages/com.unity.2d.pixel-perfect
       name: com.unity.2d.pixel-perfect
       displayName: 2D Pixel Perfect
@@ -302,7 +305,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 4.0.2
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.psdimporter@4.0.2
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.psdimporter@4.0.2"
       assetPath: Packages/com.unity.2d.psdimporter
       name: com.unity.2d.psdimporter
       displayName: 2D PSD Importer
@@ -377,6 +380,7 @@ m_PackageAssets:
         - 6.0.5
         - 6.0.6
         - 6.0.7
+        - 6.0.8
         - 7.0.0-pre.3
         - 7.0.0-pre.4
         - 7.0.0
@@ -388,6 +392,8 @@ m_PackageAssets:
         - 8.0.0
         - 8.0.1
         - 8.0.2
+        - 8.0.3
+        - 8.0.4
         - 9.0.0-pre.1
         - 9.0.0-pre.2
         - 9.0.0
@@ -503,7 +509,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 5.1.1
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.spriteshape@5.1.1
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.spriteshape@5.1.1"
       assetPath: Packages/com.unity.2d.spriteshape
       name: com.unity.2d.spriteshape
       displayName: 2D SpriteShape
@@ -724,7 +730,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 1.3.9
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.collab-proxy@1.3.9
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.collab-proxy@1.3.9"
       assetPath: Packages/com.unity.collab-proxy
       name: com.unity.collab-proxy
       displayName: Unity Collaborate
@@ -880,7 +886,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 2.0.7
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.ide.rider@2.0.7
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.ide.rider@2.0.7"
       assetPath: Packages/com.unity.ide.rider
       name: com.unity.ide.rider
       displayName: JetBrains Rider Editor
@@ -937,6 +943,7 @@ m_PackageAssets:
         - 3.0.24
         - 3.0.25
         - 3.0.26
+        - 3.0.27
         compatible:
         - 1.0.2
         - 1.0.6
@@ -978,6 +985,7 @@ m_PackageAssets:
         - 3.0.24
         - 3.0.25
         - 3.0.26
+        - 3.0.27
         verified: 2.0.7
       dependencies:
       - name: com.unity.test-framework
@@ -1017,7 +1025,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 1.2.5
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.ide.vscode@1.2.5
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.ide.vscode@1.2.5"
       assetPath: Packages/com.unity.ide.vscode
       name: com.unity.ide.vscode
       displayName: Visual Studio Code Editor
@@ -1090,7 +1098,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 1.1.24
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.test-framework@1.1.24
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.test-framework@1.1.24"
       assetPath: Packages/com.unity.test-framework
       name: com.unity.test-framework
       displayName: Test Framework
@@ -1148,6 +1156,9 @@ m_PackageAssets:
         - 1.3.7
         - 1.3.8
         - 1.3.9
+        - 1.4.0
+        - 1.4.1
+        - 1.4.2
         - 2.0.1-exp.1
         - 2.0.1-exp.2
         - 2.0.1-pre.12
@@ -1169,6 +1180,9 @@ m_PackageAssets:
         - 1.3.7
         - 1.3.8
         - 1.3.9
+        - 1.4.0
+        - 1.4.1
+        - 1.4.2
         - 2.0.1-exp.1
         - 2.0.1-exp.2
         - 2.0.1-pre.12
@@ -1216,7 +1230,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 3.0.4
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.textmeshpro@3.0.4
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.textmeshpro@3.0.4"
       assetPath: Packages/com.unity.textmeshpro
       name: com.unity.textmeshpro
       displayName: TextMeshPro
@@ -1337,6 +1351,7 @@ m_PackageAssets:
         - 3.2.0-pre.4
         - 3.2.0-pre.5
         - 3.2.0-pre.6
+        - 3.2.0-pre.7
         - 4.0.0-pre.1
         - 4.0.0-pre.2
         compatible:
@@ -1351,6 +1366,7 @@ m_PackageAssets:
         - 3.2.0-pre.4
         - 3.2.0-pre.5
         - 3.2.0-pre.6
+        - 3.2.0-pre.7
         verified: 3.0.6
       dependencies:
       - name: com.unity.ugui
@@ -1393,7 +1409,7 @@ m_PackageAssets:
       isDirectDependency: 1
       version: 1.4.7
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.timeline@1.4.7
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.timeline@1.4.7"
       assetPath: Packages/com.unity.timeline
       name: com.unity.timeline
       displayName: Timeline
@@ -3391,7 +3407,7 @@ m_PackageAssets:
       isDirectDependency: 0
       version: 1.0.6
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.ext.nunit@1.0.6
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.ext.nunit@1.0.6"
       assetPath: Packages/com.unity.ext.nunit
       name: com.unity.ext.nunit
       displayName: Custom NUnit
@@ -3460,7 +3476,7 @@ m_PackageAssets:
       isDirectDependency: 0
       version: 1.1.0
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.mathematics@1.1.0
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.mathematics@1.1.0"
       assetPath: Packages/com.unity.mathematics
       name: com.unity.mathematics
       displayName: Mathematics
@@ -3543,7 +3559,7 @@ m_PackageAssets:
       isDirectDependency: 0
       version: 4.0.3
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.common@4.0.3
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.common@4.0.3"
       assetPath: Packages/com.unity.2d.common
       name: com.unity.2d.common
       displayName: 2D Common
@@ -3659,7 +3675,7 @@ m_PackageAssets:
       isDirectDependency: 0
       version: 4.0.1
       source: 1
-      resolvedPath: C:\Users\MSI\Documents\GitHub\Sample\HUNJIN\Library\PackageCache\com.unity.2d.path@4.0.1
+      resolvedPath: "C:\\Users\\MSI\\Desktop\\\uC0C8 \uD3F4\uB354 (2)\\HUNJIN\\Library\\PackageCache\\com.unity.2d.path@4.0.1"
       assetPath: Packages/com.unity.2d.path
       name: com.unity.2d.path
       displayName: 2D Path
@@ -3727,5 +3743,5 @@ m_PackageAssets:
         path: 
   m_LocalPackages:
     m_LocalFileStatus: []
-m_ProjectPath: C:/Users/MSI/Documents/GitHub/Sample/HUNJIN/Packages
+m_ProjectPath: "C:/Users/MSI/Desktop/\uC0C8 \uD3F4\uB354 (2)/HUNJIN/Packages"
 m_EditorVersion: 2020.3.6f1 (338bb68529b2)

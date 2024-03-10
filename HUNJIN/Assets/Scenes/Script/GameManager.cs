@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     static GameManager inst;
     public TextAsset SubjectDatebase;
     public ScrollViewEnom scrollViewEnom;
+    public ScrollViewController scrollViewController;
     public int curScene;
 
     //Subject 관리함수
@@ -235,6 +236,7 @@ public class GameManager : MonoBehaviour
         ReceivingInput.text = "";
         NoneDrop.captionText.text = "부서";
         AllCount[curScene].text = "";
+        scrollViewController.ResetEnId();
         //main.SetActive(false);
         //if (Time.frameCount % 30 == 0)
         //{
@@ -259,6 +261,8 @@ public class GameManager : MonoBehaviour
         SubjectNameSearch[curScene].text = "";
         ResetData();
         OnDropdownEvent(0);
+        curData.Clear();
+        scrollViewEnom.UpdateScrollView();
         if (!subfirst && curType != "Main" && curType != "Enrollment")
         {
             ScrollViewController.Instance.UIObjectReset();
@@ -338,43 +342,87 @@ public class GameManager : MonoBehaviour
     }
     public int AAASearch()// 거래처 검색용
     {
+        isArrow = true;
+        isSed = true;
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
         MySearchData.Clear();
-
+        OnDropdownEvent(CompanySearch);
         int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        int saveCount = 0;
+        foreach (var obj in distPerson)
         {
-            if (MyCompanyDatabase[i].CompanyName.Trim().ToLower().Contains(dropdown[curScene].options[dropdown[curScene].value].text.Trim().ToLower()))
-            {
-                MySearchData.Add(MyCompanyDatabase[i]);
+            // "22", "22", "22", "22", "22", "22", "22" 
+            if (obj.CompanyName.Trim().ToLower().Contains(dropdown[curScene].options[dropdown[curScene].value].text.Trim().ToLower()))
+            { 
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
                 count++;
-
             }
         }
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
 
+        saveCount = count;
+        count /= PageObject;
+        Maxpage = count;
+        count = PageObject;
+        if (Maxpage == Curpage)
+        {
+            saveCount %= PageObject;
+            count = saveCount;
+        }
+        //for (int i = 0; i < DoSearchData.Count; i++)
+        //{
+        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
+        //    {
+        //        MySearchData.Add(DoSearchData[i]);
+        //        count++;
+        //    }
+        //}
+        int TextUI = Curpage + 1;
+        int MaxTextUI = Maxpage + 1;
+        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
         return count;
     }
     public int ProductSearch()//텍스트 들어가는 검색
     {
+        isArrow = true;
+        isSed = true;
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
         MySearchData.Clear();
-
+        OnDropdownEvent(CompanySearch);
         int count = 0;
-        if (SubjectNameSearch[curScene].text == "")
-            return count;
-
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
+        int saveCount = 0;
+        foreach (var obj in distPerson)
         {
-            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
+            // "22", "22", "22", "22", "22", "22", "22" 
+            if (obj.SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
-                MySearchData.Add(MyCompanyDatabase[i]);
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
                 count++;
-
             }
         }
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + MyCompanyDatabase.Count.ToString() + "]";
-        isArrow = false;
 
+        saveCount = count;
+        count /= PageObject;
+        Maxpage = count;
+        count = PageObject;
+        if (Maxpage == Curpage)
+        {
+            saveCount %= PageObject;
+            count = saveCount;
+        }
+        //for (int i = 0; i < DoSearchData.Count; i++)
+        //{
+        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
+        //    {
+        //        MySearchData.Add(DoSearchData[i]);
+        //        count++;
+        //    }
+        //}
+        int TextUI = Curpage + 1;
+        int MaxTextUI = Maxpage + 1;
+        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
         return count;
+
+
     }
     public int ProductSearch(string text)//over 들어가는 검색
     {
@@ -649,7 +697,10 @@ public class GameManager : MonoBehaviour
         form.AddField("none", None);
 
         ResetData();
-
+        curData.Clear();
+        scrollViewEnom.UpdateScrollView();
+        CompanyDrop.value = 0;
+        NoneDrop.value = 0;
         StartCoroutine(Post(form));
     }
     IEnumerator Post(WWWForm form)
