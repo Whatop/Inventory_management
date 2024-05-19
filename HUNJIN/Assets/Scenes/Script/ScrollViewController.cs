@@ -371,7 +371,6 @@ public class ScrollViewController : MonoBehaviour
     public void DoSearch()
     {
         gameManager.OnDropdownEvent(0);
-        ResetEnId();
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
         gameManager.isSubject = false;
         ResetId();

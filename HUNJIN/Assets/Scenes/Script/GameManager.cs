@@ -1,21 +1,21 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.IO;
-using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Networking;
-using System;
 using System.Linq;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
 [System.Serializable]
 public class CompanyList
 {
-    public CompanyList(string _Date, string _SubjectName, string _Receiving, string _Release, string _CompanyName, string _Time)
-    { Date = _Date; SubjectName = _SubjectName; Receiving = _Receiving; Release = _Release; CompanyName = _CompanyName; ReceivingTime = _Time; }
+    public CompanyList(string _Date, string _SubjectName, string _Receiving, string _Release, string _CompanyName, string _Time, string _Gugo)
+    { Date = _Date; SubjectName = _SubjectName; Receiving = _Receiving; Release = _Release; CompanyName = _CompanyName; ReceivingTime = _Time; Gugo = _Gugo; }
 
     //재고 이동(++날짜 , 회사명, 시간,
 
-    public string Date, SubjectName = "None", Receiving = "0", Release = "0", CompanyName = "None", ReceivingTime = "";
+    public string Date, SubjectName = "None", Receiving = "0", Release = "0", CompanyName = "None", ReceivingTime = "", Gugo = "";
 }
 
 [System.Serializable]
@@ -59,8 +59,8 @@ public class GameManager : MonoBehaviour
 
     public GameObject[] Scenes;
 
-    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEdropdown[curScene].bXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";//전해업체
-    string CodeURL = "https://script.google.com/macros/s/AKfycbyTjQ7vaLoT1KB5XV6fQah_GohTipaadENBkjuAQi0FYN0XFmgqJocwOO5BvWV2aRMGrQ/exec";//코드
+    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEdropdown[curScene].bXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:R";//전해업체
+    string CodeURL = "https://script.google.com/macros/s/AKfycbw3D8WZBrlTQU6q003Vi7u7Mn91NM-4nUotIIuY1qI1iUD_gN1xdcSh3UjyCaSZnHO-2A/exec";//코드
 
     public int CompanyType;
     public int CompanySearch;
@@ -85,8 +85,8 @@ public class GameManager : MonoBehaviour
     // ENROLLMENT 
     public Dropdown CompanyDrop, NoneDrop;
     public TMP_InputField SubjectInput;
-    public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput;
-    string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None;
+    public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput, GugoInput;
+    string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None, Gugo;
     public List<string> CompanyData;
     public List<string> NameData;
     public List<string> EnomData;
@@ -117,6 +117,8 @@ public class GameManager : MonoBehaviour
         inst = this;
         for (int i = 0; i < 4; i++)
             dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
+
+        main.SetActive(true);
     }
 
     public void Resetdropdown()
@@ -154,6 +156,7 @@ public class GameManager : MonoBehaviour
 
         SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
         // 여기 
+        main.SetActive(false);
     }
 
     private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
@@ -173,19 +176,24 @@ public class GameManager : MonoBehaviour
     public void OnInputValueChanged(string text)
     {
         curData.Clear();
+        HashSet<string> addedNames = new HashSet<string>(); // HashSet to track added names
         int currentIndex = CompanyDrop.value;
         for (int i = 0; i < NameCompanyData.Count; i++)
         {
             if (CompanyDrop.options[currentIndex].text == NameCompanyData[i].Company)
             {
-                if (NameCompanyData[i].Name.Trim().ToLower().Contains(SubjectInput.text.Trim().ToLower()))
+                string trimmedName = NameCompanyData[i].Name.Trim().ToLower();
+                if (trimmedName.Contains(SubjectInput.text.Trim().ToLower()) && !addedNames.Contains(trimmedName))
+                {
                     curData.Add(NameCompanyData[i].Name);
+                    addedNames.Add(trimmedName); // Track the added name
+                }
             }
         }
 
-
         scrollViewEnom.UpdateScrollView();
     }
+
 
     public int GetSeachResult()
     {
@@ -234,6 +242,7 @@ public class GameManager : MonoBehaviour
         SubjectInput.text = "";
         ReleaseInput.text = "";
         ReceivingInput.text = "";
+        GugoInput.text = "";
         NoneDrop.captionText.text = "부서";
         AllCount[curScene].text = "";
         scrollViewController.ResetEnId();
@@ -254,7 +263,7 @@ public class GameManager : MonoBehaviour
     }
     public void TabClick(string tabName)
     {
-        CompanyDrop.captionText.text = "거래처";
+        CompanyDrop.captionText.text = "기본";
         // if (tabName == "Subject" || tabName == "Material")
         //     animator.SetTrigger("Start");
         MySearchData.Clear();
@@ -344,7 +353,7 @@ public class GameManager : MonoBehaviour
     {
         isArrow = true;
         isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName,person.Gugo }).Distinct().ToList();
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
@@ -354,7 +363,7 @@ public class GameManager : MonoBehaviour
             // "22", "22", "22", "22", "22", "22", "22" 
             if (obj.CompanyName.Trim().ToLower().Contains(dropdown[curScene].options[dropdown[curScene].value].text.Trim().ToLower()))
             { 
-                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
                 count++;
             }
         }
@@ -385,7 +394,7 @@ public class GameManager : MonoBehaviour
     {
         isArrow = true;
         isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName, person.Gugo }).Distinct().ToList();
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
@@ -395,7 +404,7 @@ public class GameManager : MonoBehaviour
             // "22", "22", "22", "22", "22", "22", "22" 
             if (obj.SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
             {
-                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
                 count++;
             }
         }
@@ -459,7 +468,7 @@ public class GameManager : MonoBehaviour
     {
         isArrow = true;
         isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName }).Distinct().ToList();
+        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName,person.Gugo }).Distinct().ToList();
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;
@@ -467,7 +476,7 @@ public class GameManager : MonoBehaviour
         foreach (var obj in distPerson)
         {
             // "22", "22", "22", "22", "22", "22", "22" 
-            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10"));
+            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10",obj.Gugo));
             count++;
         }
 
@@ -567,7 +576,7 @@ public class GameManager : MonoBehaviour
     }
     public string[] AllGetSearch(int id)
     {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22","22" };
 
         jdata[0] = MyCompanyDatabase[id].Date;
         jdata[1] = MyCompanyDatabase[id].SubjectName;
@@ -575,12 +584,13 @@ public class GameManager : MonoBehaviour
         jdata[3] = MyCompanyDatabase[id].Receiving;
         jdata[4] = MyCompanyDatabase[id].CompanyName;
         jdata[6] = MyCompanyDatabase[id].ReceivingTime;
+        jdata[7] = MyCompanyDatabase[id].Gugo;
 
         return jdata;
     }
     public string[] DoGetSearch(int id)
     {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22", "22" };
 
         if (DoSearchData.Count < id)
             return jdata;
@@ -590,12 +600,13 @@ public class GameManager : MonoBehaviour
         jdata[3] = DoSearchData[id].Receiving;
         jdata[4] = DoSearchData[id].CompanyName;
         jdata[6] = DoSearchData[id].ReceivingTime;
+        jdata[7] = DoSearchData[id].Gugo;
 
         return jdata;
     }
     public string[] GetSearch(int id)// Date Name Rel Rece ComName Com
     {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22" };
+        string[] jdata = { "22", "22", "22", "22", "22", "22", "22", "22" };
 
 
         jdata[0] = MySearchData[id].Date;
@@ -604,6 +615,7 @@ public class GameManager : MonoBehaviour
         jdata[3] = MySearchData[id].Receiving;
         jdata[4] = MySearchData[id].CompanyName;
         jdata[6] = MySearchData[id].ReceivingTime;
+        jdata[7] = MySearchData[id].Gugo;
 
         return jdata;
     }
@@ -611,6 +623,7 @@ public class GameManager : MonoBehaviour
     {
         MyCompanyDatabase.Clear();
         CompanyData.Clear();
+        CompanyDrop.ClearOptions();
         NameData.Clear();
         curData.Clear();
         NameCompanyData.Clear();
@@ -620,18 +633,17 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < line.Length; i++)
         {
             string[] row = line[i].Split('\t');
-            if (row.Length > 5)
+            if (row.Length > 6)
             {
-                for (int j = 0; j < 6; j++)
+                for (int j = 0; j < 8; j++)
                 {
-                    if (row[j] == "")
-                    {
-                        row[j] = "0";
-                    }
+                        if (row[j] == "")
+                        {
+                            row[j] = "0";
+                        }
                 }
-                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None"));
+                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None",row[7].Replace(" ", "")));
             }
-
         }
         ResetData();
         var AehdIa = MyCompanyDatabase
@@ -668,10 +680,12 @@ public class GameManager : MonoBehaviour
         SubjectName = SubjectInput.text.Trim();
         Release = ReleaseInput.text.Trim();
         Receiving = ReceivingInput.text.Trim();
+        Gugo = GugoInput.text.Trim();
         CompanyName = CompanyDrop.captionText.text.Trim();
         ReceivingTime = TimeInput.text.Trim();
         Date = DateInput.text.Trim();
         None = NoneDrop.captionText.text.Trim();
+     
         return true;
     }
     public void Register() //등록
@@ -695,6 +709,7 @@ public class GameManager : MonoBehaviour
         form.AddField("companyName", CompanyName);
         form.AddField("rtime", ReceivingTime);
         form.AddField("none", None);
+        form.AddField("gugo", Gugo);
 
         ResetData();
         curData.Clear();
@@ -725,14 +740,14 @@ public class GameManager : MonoBehaviour
     IEnumerator Lookup(string curType)
     {
         //@@ 추가 Press, Welding, Assembly, All
-        if (curType == "Press")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=0&range=K2:Q";
-        else if (curType == "All")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:Q";
+        if (curType == "All")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:R";
+        else if (curType == "Press")
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=0&range=K2:R";
         else if (curType == "Welding")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:Q";
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:R";
         else if (curType == "Assembly")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:Q";
+            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:R";
         else if (curType == "Lost")
             ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=632245483&range=A2:G";
 

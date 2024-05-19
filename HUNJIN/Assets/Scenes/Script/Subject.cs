@@ -8,6 +8,7 @@ public class Subject : MonoBehaviour
     public Text SubjectRelease;
     public Text SubjectReceiving;
     public Text Remaining;
+    public Text Gugo;
     public Image Bg;
     public Image image;
     public Sprite[] Sprites;
@@ -39,6 +40,7 @@ public class Subject : MonoBehaviour
                     SubjectReceiving.gameObject.SetActive(true);
                     Remaining.gameObject.SetActive(true);
                     SubjectName.gameObject.SetActive(true);
+                    Gugo.gameObject.SetActive(true);
                 }
                 else
                 {
@@ -47,6 +49,7 @@ public class Subject : MonoBehaviour
                     SubjectReceiving.gameObject.SetActive(false);
                     Remaining.gameObject.SetActive(true);
                     SubjectName.gameObject.SetActive(true);
+                    Gugo.gameObject.SetActive(true);
                 }
                 if (GameManager.Instance.isSed)
                 {
@@ -61,6 +64,7 @@ public class Subject : MonoBehaviour
                 }
                 SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = searchSubject[1].Trim();
+                Gugo.text = searchSubject[7].Trim();
 
                 if (GameManager.Instance.isSubject)
                 {
@@ -109,6 +113,7 @@ public class Subject : MonoBehaviour
                 string[] AllsearchSubject = GameManager.Instance.DoGetSearch(myId);
                 SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
                 SubjectName.text = AllsearchSubject[1].Trim();
+                Gugo.text = AllsearchSubject[7].Trim();
                 SetColorBasedOnDate();
             }
         }

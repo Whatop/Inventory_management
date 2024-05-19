@@ -319,7 +319,7 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
-      Hash: d5f9e2f0219abe67b8da0c52086a870e
+      Hash: 88ec5155f4c753ae2bd45589215117ee
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Subject
@@ -589,7 +589,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: ba8146c9b6249dac15db52fa094ae128
+      Hash: 0a073f24d03193cd683dcd01f35b008f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -806,4 +806,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/MSI/Downloads/SAMPLE-29.apk
+  playerPath: C:/Users/MSI/Downloads/SAMPLE-33.apk
