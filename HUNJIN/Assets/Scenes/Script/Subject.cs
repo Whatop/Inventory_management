@@ -3,18 +3,10 @@ using UnityEngine.UI;
 
 public class Subject : MonoBehaviour
 {
-    public Text SubjectName;
-    public Text SubjectDate;
-    public Text SubjectRelease;
-    public Text SubjectReceiving;
-    public Text Remaining;
-    public Text Gugo;
-    public Image Bg;
-    public Image image;
+    public Text SubjectName, SubjectDate, SubjectRelease, SubjectReceiving, Remaining, Gugo;
+    public Image Bg, image;
     public Sprite[] Sprites;
     [SerializeField] private int myId;
-
-    //문제점 생성이 2번되서 200, 202가 안보임
 
     private void OnDisable()
     {
@@ -24,15 +16,15 @@ public class Subject : MonoBehaviour
 
     private void OnEnable()
     {
-        if (!ScrollViewController.Instance.dont)
+        if (ScrollViewController.Instance != null && !ScrollViewController.Instance.dont)
         {
-            if(myId == -99)
-            myId = ScrollViewController.Instance.GetId(); // GetId() 함수를 한 번 호출하고 그 값을 myId 변수에 저장
+            if (myId == -99) myId = ScrollViewController.Instance.GetId();
 
             if (GameManager.Instance.MySearchData.Count != 0)
             {
-                int searchCount = 0;
-                string[] searchSubject;
+                int searchCount;
+                string[] s;
+
                 if (GameManager.Instance.isSubject)
                 {
                     image.gameObject.SetActive(true);
@@ -51,58 +43,43 @@ public class Subject : MonoBehaviour
                     SubjectName.gameObject.SetActive(true);
                     Gugo.gameObject.SetActive(true);
                 }
+
                 if (GameManager.Instance.isSed)
                 {
                     searchCount = myId + GameManager.Instance.Curpage * GameManager.Instance.PageObject + 1;
-                    searchSubject = GameManager.Instance.GetSearch(searchCount - 1);
+                    s = GameManager.Instance.GetSearch(searchCount - 1);
                 }
                 else
                 {
-
-                    searchCount = myId ;
-                    searchSubject = GameManager.Instance.GetSearch(searchCount);
+                    searchCount = myId;
+                    s = GameManager.Instance.GetSearch(searchCount);
                 }
-                SubjectDate.text = searchSubject[0].Trim().Replace("-", "/");
-                SubjectName.text = searchSubject[1].Trim();
-                Gugo.text = searchSubject[7].Trim();
 
-                if (GameManager.Instance.isSubject)
-                {
-                    SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
-                }
-                if(GameManager.Instance.curType == "Lost")
+                SubjectDate.text = (s[0] ?? "").Trim().Replace("-", "/");
+                SubjectName.text = (s[1] ?? "").Trim();
+                Gugo.text = (s[7] ?? "").Trim();
+
+                int release = int.TryParse((s[3] ?? "0").Trim(), out var r1) ? r1 : 0;
+                int receiving = int.TryParse((s[2] ?? "0").Trim(), out var r2) ? r2 : 0;
+
+                if (GameManager.Instance.curType == "Lost")
                 {
                     SubjectDate.gameObject.SetActive(false);
-                    if (int.Parse(searchSubject[3].Trim()) > 0)
-                    {
-                        SetArrowInfo(Color.blue, "재고", searchSubject[3].Trim());
-                    }
-                    else
-                    {
-                        SetArrowInfo(Color.black, "대기", "???");
-                    }
+                    if (receiving > 0) SetArrowInfo(Color.blue, "재고", receiving.ToString());
+                    else SetArrowInfo(Color.black, "대기", "???");
                 }
                 else
                 {
-                    if (int.Parse(searchSubject[3].Trim()) > 0)
-                    {
-                        SetArrowInfo(Color.blue, "출고", searchSubject[3].Trim());
-                    }
-                    else if (int.Parse(searchSubject[2].Trim()) > 0)
-                    {
-                        SetArrowInfo(Color.red, "입고", searchSubject[2].Trim());
-                    }
-                    else
-                    {
-                        SetArrowInfo(Color.black, "대기", "???");
-                    }
+                    if (receiving > 0) SetArrowInfo(Color.blue, "출고", receiving.ToString());
+                    else if (release > 0) SetArrowInfo(Color.red, "입고", release.ToString());
+                    else SetArrowInfo(Color.black, "대기", "???");
                 }
 
                 if (GameManager.Instance.isSed)
                 {
                     SubjectReceiving.gameObject.SetActive(false);
                     SubjectDate.gameObject.SetActive(false);
-                    SetArrowInfo(Color.black, searchCount.ToString(), searchSubject[4]);
+                    SetArrowInfo(Color.black, searchCount.ToString(), s[4]);
                 }
 
                 ShowAllSubjectCountText();
@@ -110,41 +87,24 @@ public class Subject : MonoBehaviour
             else
             {
                 myId = ScrollViewController.Instance.GetId();
-                string[] AllsearchSubject = GameManager.Instance.DoGetSearch(myId);
-                SubjectDate.text = AllsearchSubject[0].Trim().Replace("-", "/");
-                SubjectName.text = AllsearchSubject[1].Trim();
-                Gugo.text = AllsearchSubject[7].Trim();
-                SetColorBasedOnDate();
+                var s = GameManager.Instance.DoGetSearch(myId);
+                SubjectDate.text = (s[0] ?? "").Trim().Replace("-", "/");
+                SubjectName.text = (s[1] ?? "").Trim();
+                Gugo.text = (s[7] ?? "").Trim();
+                // 필요시 배경색/아이콘 조정 로직 추가 가능
             }
         }
     }
 
-    private void SetArrowInfo(Color arrowColor, string releaseText, string remainingText)
+    private void SetArrowInfo(Color c, string label, string qty)
     {
-        image.sprite = Sprites[releaseText == "출고" ? 0 : 1];
-        image.color = arrowColor;
-        SubjectRelease.color = arrowColor;
-        SubjectRelease.text = releaseText;
-        Remaining.text = remainingText;
-        Remaining.color = arrowColor;
-    }
-
-    private void SetColorBasedOnDate()
-    {
-        if (SubjectReceiving.text != "None")
-        {
-            if (int.Parse(SubjectDate.text) % 2 == 0)
-            {
-                image.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f); // carrot
-                // SubjectName.color = new Color(0.9607844f, 0.3607843f, 0.1372549f, 1f);
-            }
-            else
-            {
-                image.color = Color.black;
-                SubjectName.color = Color.black;
-                Bg.color = Color.white;
-            }
-        }
+        if (Sprites != null && Sprites.Length >= 2)
+            image.sprite = Sprites[label == "출고" ? 0 : 1];
+        image.color = c;
+        SubjectRelease.color = c;
+        SubjectRelease.text = label;
+        Remaining.text = qty;
+        Remaining.color = c;
     }
 
     private void ShowAllSubjectCountText()

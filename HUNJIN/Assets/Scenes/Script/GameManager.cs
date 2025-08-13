@@ -1,19 +1,18 @@
+// == 교체본 ==
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+
 [System.Serializable]
 public class CompanyList
 {
     public CompanyList(string _Date, string _SubjectName, string _Receiving, string _Release, string _CompanyName, string _Time, string _Gugo)
     { Date = _Date; SubjectName = _SubjectName; Receiving = _Receiving; Release = _Release; CompanyName = _CompanyName; ReceivingTime = _Time; Gugo = _Gugo; }
-
-    //재고 이동(++날짜 , 회사명, 시간,
 
     public string Date, SubjectName = "None", Receiving = "0", Release = "0", CompanyName = "None", ReceivingTime = "", Gugo = "";
 }
@@ -28,749 +27,522 @@ public class NameCompanyList
 
 public class GameManager : MonoBehaviour
 {
-    // 그냥 검색된 메서스를 넣는 변수를 만들어서 처리하기
-    public static List<T> removeDuplicates<T>(List<T> list)
-    {
-        return new HashSet<T>(list).ToList();
-    }
+    public static List<T> removeDuplicates<T>(List<T> list) => new HashSet<T>(list).ToList();
 
-
-    public bool isCompanyName;
     static GameManager inst;
-    public TextAsset SubjectDatebase;
+    public static GameManager Instance => inst;
+
+    [Header("Config / Repository")]
+    public InventoryConfig inventoryConfig;
+    private InventoryRepository repository;
+
+    [Header("Scene/UI")]
     public ScrollViewEnom scrollViewEnom;
     public ScrollViewController scrollViewController;
-    public int curScene;
-
-    //Subject 관리함수
-    public bool isSed;
-    public bool isSubject = false;
-
-
     public GameObject main;
-    public List<CompanyList> MyCompanyDatabase;
-    public List<CompanyList> MySearchData;
-    public List<CompanyList> DoSearchData;
-    public List<NameCompanyList> NameCompanyData;
-
+    public GameObject[] Scenes;
     public Animator animator;
 
-    public string curType = "Main";
+    [Header("State")]
+    public int curScene;
+    public bool isSed;                  // 요약/페이지네이션 여부
+    public bool isSubject = false;      // 상세 여부
+    public string curType = "Main";     // "Main","Enrollment","Press","Welding","Assembly","All","Lost"
 
-    public GameObject[] Scenes;
+    [Header("Data In-Memory")]
+    public List<CompanyList> MyCompanyDatabase = new List<CompanyList>();
+    public List<CompanyList> MySearchData = new List<CompanyList>();
+    public List<CompanyList> DoSearchData = new List<CompanyList>();
+    public List<NameCompanyList> NameCompanyData = new List<NameCompanyList>();
+    public List<string> CompanyData = new List<string>();
+    public List<string> NameData = new List<string>();
+    public List<string> EnomData = new List<string>();
+    public List<string> curData = new List<string>();
 
-    string ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEdropdown[curScene].bXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:R";//전해업체
-    string CodeURL = "https://script.google.com/macros/s/AKfycbw3D8WZBrlTQU6q003Vi7u7Mn91NM-4nUotIIuY1qI1iUD_gN1xdcSh3UjyCaSZnHO-2A/exec";//코드
-
-    public int CompanyType;
-    public int CompanySearch;
-    private bool subfirst = true;
-    string filePath;
-    public int SeachIndex = 1;
-
+    [Header("UI Refs")]
     public TMP_InputField[] SubjectNameSearch;
     public TextMeshProUGUI[] AllSubjectCountText;
     public TextMeshProUGUI[] AllCount;
     public GameObject[] CheckBoxs;
     public Dropdown[] dropdown;
     public Dropdown[] Searchdropdown;
+
+    // ENROLLMENT 
+    public Dropdown CompanyDrop, NoneDrop;
+    public TMP_InputField SubjectInput;
+    public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput, GugoInput;
+    public GameObject Loading;
+
     // SearchScene
     public int Curpage = 0;
     private int Maxpage = 1;
     public int PageObject = 10;
     public GameObject LeftArrow;
     public GameObject RightArrow;
-    bool isArrow = false;
 
-    // ENROLLMENT 
-    public Dropdown CompanyDrop, NoneDrop;
-    public TMP_InputField SubjectInput;
-    public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput, GugoInput;
-    string Date, SubjectName, Release, Receiving, CompanyName, ReceivingTime, None, Gugo;
-    public List<string> CompanyData;
-    public List<string> NameData;
-    public List<string> EnomData;
-    public List<string> curData;
-    public GameObject Loading;
+    // Flags
+    public bool isCompanyName;
+    private bool subfirst = true;
+    private bool isArrow = false;
     public bool isloading;
 
-    public static GameManager Instance
-    {
-        get
-        {
-            if (null == inst)
-            {
-                return null;
-            }
-            return inst;
-        }
-    }
+    // Google Apps Script (등록용)
+    string CodeURL = "https://script.google.com/macros/s/AKfycbw3D8WZBrlTQU6q003Vi7u7Mn91NM-4nUotIIuY1qI1iUD_gN1xdcSh3UjyCaSZnHO-2A/exec";
+    public int CompanySearch;
+    public int SeachIndex = 1;
+
     void Awake()
     {
-        for (int i = 0; i < Scenes.Length; i++)
-        {
-            if (i == 0)
-                Scenes[i].gameObject.SetActive(true);
-            else
-                Scenes[i].gameObject.SetActive(false);
-        }
         inst = this;
-        for (int i = 0; i < 4; i++)
-            dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
+        repository = new InventoryRepository(inventoryConfig);
+
+        // 첫 화면 활성화
+        if (Scenes != null)
+        {
+            for (int i = 0; i < Scenes.Length; i++)
+                Scenes[i].SetActive(i == 0);
+        }
+
+        // 드롭다운 안전 리스너
+        if (dropdown != null)
+        {
+            int n = Mathf.Min(dropdown.Length, 4);
+            for (int i = 0; i < n; i++)
+                if (dropdown[i] != null) dropdown[i].onValueChanged.AddListener(OnDropdownEvent);
+        }
 
         main.SetActive(true);
     }
 
-    public void Resetdropdown()
-    {
-        SubjectNameSearch[curScene].text = "";
-    }
-
-    public void SetLoading()
-    {
-        isloading = true;
-    }
-    public void searchButtonDown(int i)
-    {
-        SubjectInput.text = curData[i];
-        curData.Clear();
-        scrollViewEnom.UpdateScrollView();
-    }
     public void Start()
     {
         isCompanyName = true;
         subfirst = true;
         isSubject = false;
-        filePath = Application.persistentDataPath + "/MySubjectText.txt";
-        Debug.Log(filePath);
+
         DateInput.text = DateTime.Now.ToString("yy-MM-dd");
         TimeInput.text = DateTime.Now.ToString("HH:mm");
-        Date = DateInput.text;
-        ReceivingTime = TimeInput.text;
-        AllSubjectCountText[curScene].text = "[" + DoSearchData.Count.ToString() + "/" + DoSearchData.Count.ToString() + "]";
-        for (int i = 0; i < CheckBoxs.Length; i++)
-        {
-            CheckBoxs[i].SetActive(false);
-        }
 
+        if (AllSubjectCountText != null && AllSubjectCountText.Length > 0)
+            AllSubjectCountText[curScene].text = "[0/0]";
+
+        for (int i = 0; i < CheckBoxs.Length; i++)
+            CheckBoxs[i].SetActive(false);
 
         SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
-        // 여기 
         main.SetActive(false);
     }
 
-    private void PopulateDropdown(List<string> items) // 초기화하고 리스트 넣기
+    // ---------- UI helpers ----------
+    public void Resetdropdown()
     {
-        Searchdropdown[curScene].ClearOptions();
-        Searchdropdown[curScene].AddOptions(items);
-    }
-    public void OnDropdd()
-    {
-        int selectedIndex = Searchdropdown[curScene].value;
-
-        // 현재 선택된 옵션의 텍스트 얻기
-        string selectedText = Searchdropdown[curScene].options[selectedIndex].text;
-
-        SubjectNameSearch[curScene].text = selectedText;
-    }
-    public void OnInputValueChanged(string text)
-    {
-        curData.Clear();
-        HashSet<string> addedNames = new HashSet<string>(); // HashSet to track added names
-        int currentIndex = CompanyDrop.value;
-        for (int i = 0; i < NameCompanyData.Count; i++)
-        {
-            if (CompanyDrop.options[currentIndex].text == NameCompanyData[i].Company)
-            {
-                string trimmedName = NameCompanyData[i].Name.Trim().ToLower();
-                if (trimmedName.Contains(SubjectInput.text.Trim().ToLower()) && !addedNames.Contains(trimmedName))
-                {
-                    curData.Add(NameCompanyData[i].Name);
-                    addedNames.Add(trimmedName); // Track the added name
-                }
-            }
-        }
-
-        scrollViewEnom.UpdateScrollView();
+        if (SubjectNameSearch != null && SubjectNameSearch.Length > curScene && SubjectNameSearch[curScene] != null)
+            SubjectNameSearch[curScene].text = "";
     }
 
+    void StartLoading() => Loading?.SetActive(true);
+    void EndLoading() => Loading?.SetActive(false);
 
-    public int GetSeachResult()
-    {
-        // DayRemove();
-
-        int result = DoSearchData.Count;
-
-        if (result >= 50)
-        {
-            if (result > SeachIndex * 50)
-            {
-                result = SeachIndex * 50;
-            }
-        }
-
-        return result;
-    }
-
-    public int GetIndexResult(int a)
-    {
-
-        int result = a;
-
-        if (a >= 50)
-        {
-            if (a > SeachIndex * 50)
-            {
-                result = SeachIndex * 50;
-            }
-        }
-        return result;
-    }
-    public void OnDropdownEvent(int index) // 이렇게하면 index가 알아서 바뀜
-    {
-        dropdown[curScene].value = index;
-        CompanySearch = index;
-
-    }
-    public void ResetData()
-    {
-        isArrow = true;
-        Curpage = 0;
-        DateInput.text = DateTime.Now.ToString("yy/M/d");
-        TimeInput.text = DateTime.Now.ToString("HH:mm");
-        AllSubjectCountText[curScene].text = "[" + GetSeachResult() + "/" + DoSearchData.Count.ToString() + "]";
-        SubjectInput.text = "";
-        ReleaseInput.text = "";
-        ReceivingInput.text = "";
-        GugoInput.text = "";
-        NoneDrop.captionText.text = "부서";
-        AllCount[curScene].text = "";
-        scrollViewController.ResetEnId();
-        //main.SetActive(false);
-        //if (Time.frameCount % 30 == 0)
-        //{
-        //    System.GC.Collect(); // 청소코드 인게임 중이아니라 로딩씬일떄 
-        //}
-        isCompanyName = true;
-    }
-    public void CheckBoxF(int a)
-    {
-        CheckBoxs[a].SetActive(false);
-    }
-    public void CheckBoxT(int a)
-    {
-        CheckBoxs[a].SetActive(true);
-    }
-    public void TabClick(string tabName)
-    {
-        CompanyDrop.captionText.text = "기본";
-        // if (tabName == "Subject" || tabName == "Material")
-        //     animator.SetTrigger("Start");
-        MySearchData.Clear();
-        SubjectNameSearch[curScene].text = "";
-        ResetData();
-        OnDropdownEvent(0);
-        curData.Clear();
-        scrollViewEnom.UpdateScrollView();
-        if (!subfirst && curType != "Main" && curType != "Enrollment")
-        {
-            ScrollViewController.Instance.UIObjectReset();
-        }
-
-
-        if (tabName != "None")
-        {
-            int tabNum = 5;
-            switch (tabName)
-            {
-                //Press, Welding, Assembly, All
-                case "Main": tabNum = 0; break;
-                case "All": tabNum = 5; ; break;
-                case "Press": tabNum = 1; ; break;
-                case "Enrollment": tabNum = 2; break;
-                case "Welding": tabNum = 3; break;
-                case "Assembly": tabNum = 4; break;
-                case "Lost": tabNum = 6; break;
-            }
-            for (int i = 0; i < Scenes.Length; i++)
-            {
-                if (tabNum == i)
-                    Scenes[tabNum].gameObject.SetActive(true);
-                else
-                {
-                    for (int j = 0; j < Scenes.Length; j++)
-                    {
-                        if (tabNum != j)
-                            Scenes[j].gameObject.SetActive(false);
-                    }
-                }
-            }
-            if (subfirst)
-                subfirst = false;
-        }
-
-        if (tabName != "Enrollment" && tabName != "Main")
-        {
-            StartCoroutine(Lookup(tabName));
-            main.SetActive(true);
-            if (tabName == "Lost")
-                StartCoroutine(Lookup("All"));
-        }
-        else
-        {
-            if (tabName == "Enrollment")
-                StartCoroutine(Lookup("All"));
-
-            main.SetActive(false);
-        }
-        switch (tabName)
-        {
-            case "Press":
-                curScene = 0;
-                break;
-            case "Welding":
-                curScene = 1;
-                break;
-            case "Assembly":
-                curScene = 2;
-                break;
-            case "All":
-                curScene = 3;
-                break;
-            case "Lost":
-                curScene = 3;
-                break;
-            default: //main 이거나 enrollment 추가됨!,Lost 일떄 또는 none
-                curScene = 0;
-                isArrow = false;
-                break;
-        }
-
-        curType = tabName;
-
-    }
-    public int AAASearch()// 거래처 검색용
-    {
-        isArrow = true;
-        isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName,person.Gugo }).Distinct().ToList();
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        int saveCount = 0;
-        foreach (var obj in distPerson)
-        {
-            // "22", "22", "22", "22", "22", "22", "22" 
-            if (obj.CompanyName.Trim().ToLower().Contains(dropdown[curScene].options[dropdown[curScene].value].text.Trim().ToLower()))
-            { 
-                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
-                count++;
-            }
-        }
-
-        saveCount = count;
-        count /= PageObject;
-        Maxpage = count;
-        count = PageObject;
-        if (Maxpage == Curpage)
-        {
-            saveCount %= PageObject;
-            count = saveCount;
-        }
-        //for (int i = 0; i < DoSearchData.Count; i++)
-        //{
-        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-        //    {
-        //        MySearchData.Add(DoSearchData[i]);
-        //        count++;
-        //    }
-        //}
-        int TextUI = Curpage + 1;
-        int MaxTextUI = Maxpage + 1;
-        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
-        return count;
-    }
-    public int ProductSearch()//텍스트 들어가는 검색
-    {
-        isArrow = true;
-        isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName, person.Gugo }).Distinct().ToList();
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        int saveCount = 0;
-        foreach (var obj in distPerson)
-        {
-            // "22", "22", "22", "22", "22", "22", "22" 
-            if (obj.SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-            {
-                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
-                count++;
-            }
-        }
-
-        saveCount = count;
-        count /= PageObject;
-        Maxpage = count;
-        count = PageObject;
-        if (Maxpage == Curpage)
-        {
-            saveCount %= PageObject;
-            count = saveCount;
-        }
-        //for (int i = 0; i < DoSearchData.Count; i++)
-        //{
-        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-        //    {
-        //        MySearchData.Add(DoSearchData[i]);
-        //        count++;
-        //    }
-        //}
-        int TextUI = Curpage + 1;
-        int MaxTextUI = Maxpage + 1;
-        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
-        return count;
-
-
-    }
-    public int ProductSearch(string text)//over 들어가는 검색
-    {
-        MySearchData.Clear();
-
-        int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
-        {
-            if (MyCompanyDatabase[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-            {
-                MySearchData.Add(MyCompanyDatabase[i]);
-                count++;
-
-            }
-        }
-        AllSubjectCountText[curScene].text = "";
-        isArrow = false;
-
-        return count;
-    }
-    public void NextPage()
-    {
-        if (Curpage < Maxpage)
-            Curpage++;
-    }
-
-    public void PrevPage()
-    {
-        if (Curpage > 0)
-            Curpage--;
-    }
-
-    public int SEadSearch()//요약검색
-    {
-        isArrow = true;
-        isSed = true;
-        var distPerson = MyCompanyDatabase.Select(person => new { person.SubjectName, person.CompanyName,person.Gugo }).Distinct().ToList();
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        int saveCount = 0;
-        foreach (var obj in distPerson)
-        {
-            // "22", "22", "22", "22", "22", "22", "22" 
-            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10",obj.Gugo));
-            count++;
-        }
-
-        saveCount = count;
-        count /= PageObject;
-        Maxpage = count;
-        count = PageObject;
-        if (Maxpage == Curpage)
-        {
-            saveCount %= PageObject;
-            count = saveCount;
-        }
-        //for (int i = 0; i < DoSearchData.Count; i++)
-        //{
-        //    if (DoSearchData[i].SubjectName.Trim().ToLower().Contains(SubjectNameSearch[curScene].text.Trim().ToLower()))
-        //    {
-        //        MySearchData.Add(DoSearchData[i]);
-        //        count++;
-        //    }
-        //}
-        int TextUI = Curpage + 1;
-        int MaxTextUI = Maxpage + 1;
-        AllSubjectCountText[curScene].text = "[" + TextUI.ToString() + "/" + MaxTextUI.ToString() + "]";
-        return count;
-    }
-    public int DOTextSearch(String text)
-    {
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        for (int i = 0; i < MyCompanyDatabase.Count; i++)
-        {
-            if (MyCompanyDatabase[i].SubjectName.Trim() == (text.Trim()))
-            {
-                MySearchData.Add(MyCompanyDatabase[i]);
-                count++;
-            }
-        }
-
-        SubjectNameSearch[curScene].text = text.Trim();
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
-        int dex = 0;
-        for (int i = 0; i < count; i++)
-        {
-            MySearchData[i].Release.Replace(",", "");
-            MySearchData[i].Receiving.Replace(",", "");
-            dex += int.Parse(MySearchData[i].Release);
-            dex -= int.Parse(MySearchData[i].Receiving);
-        }
-        return count;
-    }
-    public int LostTextSearch() // Lost
-    {
-        MySearchData.Clear();
-        OnDropdownEvent(CompanySearch);
-        int count = 0;
-        for (int i = 0; i < DoSearchData.Count; i++)
-        {
-            MySearchData.Add(DoSearchData[i]);
-            count++;
-        }
-        AllSubjectCountText[curScene].text = "[" + count.ToString() + "/" + count.ToString() + "]";
-        return count;
-    }
-    public int GetSubjectRemaining(int id)
-    {
-
-        int dex = 0;
-        if (!isCompanyName)
-        {
-            for (int i = 0; i <= id; i++)
-            {
-                if (MySearchData[id].SubjectName.Trim() == MySearchData[i].SubjectName.Trim())
-                {
-                    MySearchData[i].Release.Replace(",", "");
-                    MySearchData[i].Receiving.Replace(",", "");
-                    dex += int.Parse(MySearchData[i].Release);
-                    dex -= int.Parse(MySearchData[i].Receiving);
-                }
-            }
-            if (dex < 0)
-            {
-                AllCount[curScene].text = MySearchData[0].SubjectName.Trim() + " - 재고 부족 : " + dex.ToString();
-            }
-            else if (dex > 0)
-            {
-                AllCount[curScene].text = MySearchData[0].SubjectName.Trim() + " - 현재 재고 : " + dex.ToString();
-            }
-            else
-            {
-                AllCount[curScene].text = " - 재고 부족 : " + dex.ToString();
-            }
-
-        }
-
-        return dex;
-    }
-    public string[] AllGetSearch(int id)
-    {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22","22" };
-
-        jdata[0] = MyCompanyDatabase[id].Date;
-        jdata[1] = MyCompanyDatabase[id].SubjectName;
-        jdata[2] = MyCompanyDatabase[id].Release;
-        jdata[3] = MyCompanyDatabase[id].Receiving;
-        jdata[4] = MyCompanyDatabase[id].CompanyName;
-        jdata[6] = MyCompanyDatabase[id].ReceivingTime;
-        jdata[7] = MyCompanyDatabase[id].Gugo;
-
-        return jdata;
-    }
-    public string[] DoGetSearch(int id)
-    {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22", "22" };
-
-        if (DoSearchData.Count < id)
-            return jdata;
-        jdata[0] = DoSearchData[id].Date;
-        jdata[1] = DoSearchData[id].SubjectName;
-        jdata[2] = DoSearchData[id].Release;
-        jdata[3] = DoSearchData[id].Receiving;
-        jdata[4] = DoSearchData[id].CompanyName;
-        jdata[6] = DoSearchData[id].ReceivingTime;
-        jdata[7] = DoSearchData[id].Gugo;
-
-        return jdata;
-    }
-    public string[] GetSearch(int id)// Date Name Rel Rece ComName Com
-    {
-        string[] jdata = { "22", "22", "22", "22", "22", "22", "22", "22" };
-
-
-        jdata[0] = MySearchData[id].Date;
-        jdata[1] = MySearchData[id].SubjectName;
-        jdata[2] = MySearchData[id].Release;
-        jdata[3] = MySearchData[id].Receiving;
-        jdata[4] = MySearchData[id].CompanyName;
-        jdata[6] = MySearchData[id].ReceivingTime;
-        jdata[7] = MySearchData[id].Gugo;
-
-        return jdata;
-    }
-    public void Load()
-    {
-        MyCompanyDatabase.Clear();
-        CompanyData.Clear();
-        CompanyDrop.ClearOptions();
-        NameData.Clear();
-        curData.Clear();
-        NameCompanyData.Clear();
-        dropdown[curScene].options.Clear();
-        string jdata = File.ReadAllText(filePath);
-        string[] line = jdata.Substring(0, jdata.Length).Split('\n');
-        for (int i = 0; i < line.Length; i++)
-        {
-            string[] row = line[i].Split('\t');
-            if (row.Length > 6)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                        if (row[j] == "")
-                        {
-                            row[j] = "0";
-                        }
-                }
-                MyCompanyDatabase.Add(new CompanyList(row[0].Replace("-", "/"), row[1].Replace(" ", ""), row[2].Replace(",", ""), row[3].Replace(",", ""), row[4], "None",row[7].Replace(" ", "")));
-            }
-        }
-        ResetData();
-        var AehdIa = MyCompanyDatabase
-                    .GroupBy(person => person.SubjectName) // SubjectName을 기준으로 그룹화
-                    .Select(group => group.First())
-                    .Distinct()
-                    .ToList();
-        var AehdCompany = MyCompanyDatabase
-            .Select(person => person.CompanyName)
-            .Distinct()
-            .ToList();
-
-        dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
-        foreach (var item in AehdIa)
-        {
-            NameData.Add(item.SubjectName);
-            NameCompanyData.Add(new NameCompanyList(item.SubjectName, item.CompanyName));
-        }
-        foreach (var item in AehdCompany)
-        {
-            CompanyData.Add(item);
-        }
-        for (int i = 0; i < CompanyData.Count; i++)
-        {
-            dropdown[curScene].options.Add(new Dropdown.OptionData(CompanyData[i]));
-            CompanyDrop.options.Add(new Dropdown.OptionData(CompanyData[i]));
-        }
-        if (curType != "Enrollment" && curType != "Main" && curType != "Lost")
-            ScrollViewController.Instance.DoSearch();
-    }
-    // 여기서 부터   
+    // ---------- Enrollment ----------
     bool SetIDPass()
     {
-        SubjectName = SubjectInput.text.Trim();
-        Release = ReleaseInput.text.Trim();
-        Receiving = ReceivingInput.text.Trim();
-        Gugo = GugoInput.text.Trim();
-        CompanyName = CompanyDrop.captionText.text.Trim();
-        ReceivingTime = TimeInput.text.Trim();
-        Date = DateInput.text.Trim();
-        None = NoneDrop.captionText.text.Trim();
-     
+        // 간단히 빈값 허용. 필요 시 validation 강화 가능
         return true;
     }
-    public void Register() //등록
-    {
-        if (!SetIDPass())
-        {
-            print("잘못된 입력입니다.");
-            return;
-        }
-        else
-        {
-            CheckBoxs[0].SetActive(true);
-        }
-        WWWForm form = new WWWForm();
-        form.AddField("order", "register");
 
-        form.AddField("date", Date);
-        form.AddField("subject", SubjectName);
-        form.AddField("release", Release);
-        form.AddField("receiving", Receiving);
-        form.AddField("companyName", CompanyName);
-        form.AddField("rtime", ReceivingTime);
-        form.AddField("none", None);
-        form.AddField("gugo", Gugo);
+    public void Register()
+    {
+        if (!SetIDPass()) { print("잘못된 입력입니다."); return; }
+
+        CheckBoxs[0].SetActive(true);
+
+        var form = new WWWForm();
+        form.AddField("order", "register");
+        form.AddField("date", DateInput.text.Trim());
+        form.AddField("subject", SubjectInput.text.Trim());
+        form.AddField("release", ReleaseInput.text.Trim());
+        form.AddField("receiving", ReceivingInput.text.Trim());
+        form.AddField("companyName", CompanyDrop.captionText.text.Trim());
+        form.AddField("rtime", TimeInput.text.Trim());
+        form.AddField("none", NoneDrop.captionText.text.Trim());
+        form.AddField("gugo", GugoInput.text.Trim());
 
         ResetData();
         curData.Clear();
         scrollViewEnom.UpdateScrollView();
         CompanyDrop.value = 0;
         NoneDrop.value = 0;
+
         StartCoroutine(Post(form));
     }
+
     IEnumerator Post(WWWForm form)
     {
-        using (UnityWebRequest www = UnityWebRequest.Post(CodeURL, form)) // 반드시 using을 써야한다
+        using (UnityWebRequest www = UnityWebRequest.Post(CodeURL, form))
         {
             yield return www.SendWebRequest();
-
-            if (www.isDone) print(www.downloadHandler.text);
+            if (www.result == UnityWebRequest.Result.Success) print(www.downloadHandler.text);
             else print("웹의 응답이 없습니다.");
         }
-        Load();
+        // 등록 후 최신 데이터 갱신 (All 기준)
+        StartCoroutine(Lookup("All"));
     }
-    void StartLoading()
-    {
-        Loading.SetActive(true);
-    }
-    void EndLoading()
-    {
-        Loading.SetActive(false);
-    }
-    IEnumerator Lookup(string curType)
-    {
-        //@@ 추가 Press, Welding, Assembly, All
-        if (curType == "All")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1973018837&range=K2:R";
-        else if (curType == "Press")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=0&range=K2:R";
-        else if (curType == "Welding")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=1809169708&range=K2:R";
-        else if (curType == "Assembly")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=334896260&range=K2:R";
-        else if (curType == "Lost")
-            ElectrolyteURL = "https://docs.google.com/spreadsheets/d/1LomcEbXhTuuskx7AT60yoTnH18NYLHvm3mvGD0g4MkM/export?format=tsv&gid=632245483&range=A2:G";
 
-        UnityWebRequest www = UnityWebRequest.Get(ElectrolyteURL);
-        StartLoading();
-        yield return www.SendWebRequest();
-        yield return new WaitForSeconds(0.35f);
+    // ---------- Search + Paging ----------
+    public void ResetData()
+    {
+        isArrow = true;
+        Curpage = 0;
+        DateInput.text = DateTime.Now.ToString("yy/M/d");
+        TimeInput.text = DateTime.Now.ToString("HH:mm");
+        if (AllSubjectCountText != null && AllSubjectCountText.Length > curScene)
+            AllSubjectCountText[curScene].text = "[0/0]";
+        SubjectInput.text = "";
+        ReleaseInput.text = "";
+        ReceivingInput.text = "";
+        GugoInput.text = "";
+        NoneDrop.captionText.text = "부서";
+        if (AllCount != null && AllCount.Length > curScene && AllCount[curScene] != null)
+            AllCount[curScene].text = "";
+        scrollViewController.ResetEnId();
+        isCompanyName = true;
+    }
 
-        if (www.isDone)
+    public void OnDropdownEvent(int index)
+    {
+        if (dropdown != null && dropdown.Length > curScene && dropdown[curScene] != null)
+            dropdown[curScene].value = index;
+        CompanySearch = index;
+    }
+
+    public void OnInputValueChanged(string text)
+    {
+        curData.Clear();
+        var added = new HashSet<string>();
+        int currentIndex = CompanyDrop.value;
+        string company = CompanyDrop.options[currentIndex].text;
+
+        foreach (var nc in NameCompanyData)
         {
-            File.WriteAllText(filePath, www.downloadHandler.text);
-            EndLoading();
-            if (isloading)
+            if (company == nc.Company)
             {
-                CheckBoxs[1].SetActive(true);
-                isloading = false;
+                string trimmed = nc.Name.Trim().ToLower();
+                if (trimmed.Contains(SubjectInput.text.Trim().ToLower()) && added.Add(trimmed))
+                    curData.Add(nc.Name);
             }
+        }
+        scrollViewEnom.UpdateScrollView();
+    }
 
-            Load();
-            //animator.SetTrigger("End");
+    // ---------- 화면 탭 전환 ----------
+    public void TabClick(string tabName)
+    {
+        CompanyDrop.captionText.text = "기본";
+        MySearchData.Clear();
+        if (SubjectNameSearch != null && SubjectNameSearch.Length > curScene) SubjectNameSearch[curScene].text = "";
+        ResetData();
+        OnDropdownEvent(0);
+        curData.Clear();
+        scrollViewEnom.UpdateScrollView();
+
+        if (!subfirst && curType != "Main" && curType != "Enrollment")
+            ScrollViewController.Instance.UIObjectReset();
+
+        int tabNum = 0;
+        switch (tabName)
+        {
+            case "Main": tabNum = 0; break;
+            case "All": tabNum = 5; break;
+            case "Press": tabNum = 1; break;
+            case "Enrollment": tabNum = 2; break;
+            case "Welding": tabNum = 3; break;
+            case "Assembly": tabNum = 4; break;
+            case "Lost": tabNum = 6; break;
+            default: tabNum = 0; break;
         }
 
-        else print("웹의 응답이 없습니다.");
+        for (int i = 0; i < Scenes.Length; i++)
+            Scenes[i].SetActive(i == tabNum);
+
+        if (subfirst) subfirst = false;
+
+        if (tabName != "Enrollment" && tabName != "Main")
+        {
+            StartCoroutine(Lookup(tabName));
+            main.SetActive(true);
+            if (tabName == "Lost") StartCoroutine(Lookup("All"));
+        }
+        else
+        {
+            if (tabName == "Enrollment") StartCoroutine(Lookup("All"));
+            main.SetActive(false);
+        }
+        switch (tabName)
+        {
+            case "Press": curScene = 0; break;
+            case "Welding": curScene = 1; break;
+            case "Assembly": curScene = 2; break;
+            case "All": curScene = 3; break;
+            case "Lost": curScene = 3; break;
+            default: curScene = 0; break;
+        }
+        curType = tabName;
+
+    }
+
+    // ---------- 데이터 로딩 ----------
+    IEnumerator Lookup(string deptKey)
+    {
+        StartLoading();
+        yield return repository.Refresh(deptKey);
+        EndLoading();
+
+        // 메모리 데이터 → 기존 구조에 맞춰 매핑
+        MyCompanyDatabase = repository.Records.Select(r =>
+            new CompanyList(r.Date, r.SubjectName, r.Receiving, r.Release, r.CompanyName, r.ReceivingTime, r.Gugo)
+        ).ToList();
+
+        BuildIndicesAndDropdowns();
+
+        if (curType != "Enrollment" && curType != "Main" && curType != "Lost")
+            ScrollViewController.Instance.DoSearch();
+    }
+
+    void BuildIndicesAndDropdowns()
+    {
+        // 초기화
+        CompanyData.Clear(); NameData.Clear(); curData.Clear(); NameCompanyData.Clear();
+        if (dropdown != null && dropdown.Length > curScene && dropdown[curScene] != null)
+            dropdown[curScene].options.Clear();
+
+        // 유니크 제품/회사
+        var uniqueBySubject = MyCompanyDatabase
+            .GroupBy(p => p.SubjectName).Select(g => g.First()).ToList();
+        var uniqueCompany = MyCompanyDatabase.Select(p => p.CompanyName).Distinct().ToList();
+
+        if (dropdown != null && dropdown.Length > curScene && dropdown[curScene] != null)
+            dropdown[curScene].options.Add(new Dropdown.OptionData("전체"));
+
+        foreach (var item in uniqueBySubject)
+        {
+            NameData.Add(item.SubjectName);
+            NameCompanyData.Add(new NameCompanyList(item.SubjectName, item.CompanyName));
+        }
+        foreach (var comp in uniqueCompany)
+        {
+            CompanyData.Add(comp);
+            if (dropdown != null && dropdown.Length > curScene && dropdown[curScene] != null)
+                dropdown[curScene].options.Add(new Dropdown.OptionData(comp));
+            CompanyDrop.options.Add(new Dropdown.OptionData(comp));
+        }
+    }
+
+    // ---------- 검색 (기존 흐름 유지) ----------
+    public int AAASearch() // 거래처 검색
+    {
+        isArrow = true; isSed = true;
+        var dist = MyCompanyDatabase.Select(p => new { p.SubjectName, p.CompanyName, p.Gugo }).Distinct().ToList();
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+
+        int count = 0;
+        string key = (dropdown[curScene].options[dropdown[curScene].value].text ?? "").Trim().ToLower();
+
+        foreach (var obj in dist)
+        {
+            if ((obj.CompanyName ?? "").Trim().ToLower().Contains(key))
+            {
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
+                count++;
+            }
+        }
+        return SetupPaging(count);
+    }
+
+    public int ProductSearch() // 텍스트 검색
+    {
+        isArrow = true; isSed = true;
+        var dist = MyCompanyDatabase.Select(p => new { p.SubjectName, p.CompanyName, p.Gugo }).Distinct().ToList();
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+
+        int count = 0;
+        string key = (SubjectNameSearch[curScene].text ?? "").Trim().ToLower();
+
+        foreach (var obj in dist)
+        {
+            if ((obj.SubjectName ?? "").Trim().ToLower().Contains(key))
+            {
+                MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
+                count++;
+            }
+        }
+        return SetupPaging(count);
+    }
+    public void searchButtonDown(int id)
+    {
+        // id 범위 체크
+        if (curData == null || id < 0 || id >= curData.Count) return;
+
+        // 선택한 이름을 등록 화면의 입력창에 반영
+        if (SubjectInput != null)
+        {
+            SubjectInput.text = curData[id];
+            // 커서를 맨 끝으로
+            try { SubjectInput.caretPosition = SubjectInput.text.Length; } catch { }
+        }
+
+        // 선택 후 자동완성 리스트 닫기
+        curData.Clear();
+        if (scrollViewEnom != null) scrollViewEnom.UpdateScrollView();
+    }
+
+    public int ProductSearch(string text) // over
+    {
+        MySearchData.Clear();
+        int count = 0;
+        string key = (SubjectNameSearch[curScene].text ?? "").Trim().ToLower();
+
+        foreach (var r in MyCompanyDatabase)
+        {
+            if ((r.SubjectName ?? "").Trim().ToLower().Contains(key))
+            {
+                MySearchData.Add(r);
+                count++;
+            }
+        }
+        AllSubjectCountText[curScene].text = "";
+        isArrow = false;
+        return count;
+    }
+
+    int SetupPaging(int total)
+    {
+        int save = total;
+        Maxpage = total / PageObject;
+        int count = (Maxpage == Curpage) ? (save % PageObject) : PageObject;
+        int ui = Curpage + 1;
+        int uiMax = Maxpage + 1;
+        AllSubjectCountText[curScene].text = $"[{ui}/{uiMax}]";
+        return count;
+    }
+
+    public int SEadSearch() // 요약
+    {
+        isArrow = true; isSed = true;
+        var dist = MyCompanyDatabase.Select(p => new { p.SubjectName, p.CompanyName, p.Gugo }).Distinct().ToList();
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+
+        int count = 0;
+        foreach (var obj in dist)
+        {
+            MySearchData.Add(new CompanyList("10/31", obj.SubjectName, "1", "1", obj.CompanyName, "10:10", obj.Gugo));
+            count++;
+        }
+        return SetupPaging(count);
+    }
+
+    public int DOTextSearch(string text)
+    {
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+        int count = 0;
+        string key = (text ?? "").Trim();
+
+        foreach (var r in MyCompanyDatabase)
+        {
+            if ((r.SubjectName ?? "").Trim().Equals(key, StringComparison.OrdinalIgnoreCase))
+            {
+                MySearchData.Add(r);
+                count++;
+            }
+        }
+
+        SubjectNameSearch[curScene].text = key;
+        AllSubjectCountText[curScene].text = $"[{count}/{count}]";
+
+        int dex = 0;
+        for (int i = 0; i < count; i++)
+        {
+            int rel = int.TryParse(MySearchData[i].Release.Replace(",", ""), out var r1) ? r1 : 0;
+            int rec = int.TryParse(MySearchData[i].Receiving.Replace(",", ""), out var r2) ? r2 : 0;
+            dex += rel; dex -= rec;
+        }
+        return count;
+    }
+
+    public int LostTextSearch()
+    {
+        MySearchData.Clear();
+        OnDropdownEvent(CompanySearch);
+        int count = MyCompanyDatabase.Count;
+        MySearchData.AddRange(MyCompanyDatabase);
+        AllSubjectCountText[curScene].text = $"[{count}/{count}]";
+        return count;
+    }
+
+    public int GetSubjectRemaining(int id)
+    {
+        int dex = 0;
+        if (!isCompanyName && MySearchData.Count > 0)
+        {
+            for (int i = 0; i <= id && i < MySearchData.Count; i++)
+            {
+                if (MySearchData[id].SubjectName.Trim() == MySearchData[i].SubjectName.Trim())
+                {
+                    int rel = int.TryParse(MySearchData[i].Release.Replace(",", ""), out var r1) ? r1 : 0;
+                    int rec = int.TryParse(MySearchData[i].Receiving.Replace(",", ""), out var r2) ? r2 : 0;
+                    dex += rel; dex -= rec;
+                }
+            }
+            if (AllCount != null && AllCount.Length > curScene && AllCount[curScene] != null)
+            {
+                if (dex < 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 재고 부족 : {dex}";
+                else if (dex > 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 현재 재고 : {dex}";
+                else AllCount[curScene].text = " - 재고 부족 : 0";
+            }
+        }
+        return dex;
+    }
+
+    public string[] GetSearch(int id)
+    {
+        string[] j = { "", "", "", "", "", "", "", "" };
+        if (id < 0 || id >= MySearchData.Count) return j;
+        j[0] = MySearchData[id].Date; j[1] = MySearchData[id].SubjectName; j[2] = MySearchData[id].Release;
+        j[3] = MySearchData[id].Receiving; j[4] = MySearchData[id].CompanyName; j[6] = MySearchData[id].ReceivingTime; j[7] = MySearchData[id].Gugo;
+        return j;
+    }
+
+    public string[] DoGetSearch(int id)
+    {
+        string[] j = { "", "", "", "", "", "", "", "" };
+        if (id < 0 || id >= MyCompanyDatabase.Count) return j;
+        j[0] = MyCompanyDatabase[id].Date; j[1] = MyCompanyDatabase[id].SubjectName; j[2] = MyCompanyDatabase[id].Release;
+        j[3] = MyCompanyDatabase[id].Receiving; j[4] = MyCompanyDatabase[id].CompanyName; j[6] = MyCompanyDatabase[id].ReceivingTime; j[7] = MyCompanyDatabase[id].Gugo;
+        return j;
+    }
+
+    public void NextPage() { if (Curpage < Maxpage) Curpage++; }
+    public void PrevPage() { if (Curpage > 0) Curpage--; }
+
+    // Android 종료키 처리 및 화살표 표시 유지
+    private void Update()
+    {
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            if (Input.GetKey(KeyCode.Home) || Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Menu))
+                Exit();
+        }
+        if (curType == "Lost")
+        {
+            LeftArrow.SetActive(false); RightArrow.SetActive(false);
+        }
+        else
+        {
+            LeftArrow.SetActive(isArrow); RightArrow.SetActive(isArrow);
+        }
     }
 
     public static void Exit()
@@ -778,36 +550,7 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
-    }
-
-    private void Update()
-    {
-        if (Application.platform == RuntimePlatform.Android)
-        {
-            if (Input.GetKey(KeyCode.Home))
-            {
-                Exit();
-            }
-            else if (Input.GetKey(KeyCode.Escape))
-            {
-                Exit();
-            }
-            else if (Input.GetKey(KeyCode.Menu))
-            {
-                Exit();
-            }
-        }
-        if (curType == "Lost")
-        {
-            LeftArrow.SetActive(false);
-            RightArrow.SetActive(false);
-        }
-        else
-        {
-            LeftArrow.SetActive(isArrow);
-            RightArrow.SetActive(isArrow);
-        }
     }
 }
