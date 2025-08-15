@@ -268,6 +268,7 @@ public class ScrollViewController : MonoBehaviour
             SpawnFromPool("Subject", transform.position);
         }
         reveprod += gameManager.MySearchData.Count;
+        gameManager.isSed = false;
         Inquiry();
     }
 

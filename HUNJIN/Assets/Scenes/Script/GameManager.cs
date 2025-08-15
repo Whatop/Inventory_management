@@ -609,12 +609,12 @@ public class GameManager : MonoBehaviour
                     dex += rel; dex -= rec;
                 }
             }
-            if (AllCount != null && AllCount.Length > curScene && AllCount[curScene] != null)
-            {
-                if (dex < 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 재고 부족 : {dex}";
-                else if (dex > 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 현재 재고 : {dex}";
-                else AllCount[curScene].text = " - 재고 부족 : 0";
-            }
+          // if (AllCount != null && AllCount.Length > curScene && AllCount[curScene] != null)
+          // {
+          //     if (dex < 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 재고 부족 : {dex}";
+          //     else if (dex > 0) AllCount[curScene].text = $"{MySearchData[0].SubjectName.Trim()} - 현재 재고 : {dex}";
+          //     else AllCount[curScene].text = " - 재고 부족 : 0";
+          // }
         }
         return dex;
     }

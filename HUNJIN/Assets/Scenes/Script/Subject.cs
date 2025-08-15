@@ -33,6 +33,7 @@ public class Subject : MonoBehaviour
                     Remaining.gameObject.SetActive(true);
                     SubjectName.gameObject.SetActive(true);
                     Gugo.gameObject.SetActive(true);
+                    SubjectReceiving.text = GameManager.Instance.GetSubjectRemaining(myId).ToString();
                 }
                 else
                 {
@@ -53,6 +54,7 @@ public class Subject : MonoBehaviour
                 {
                     searchCount = myId;
                     s = GameManager.Instance.GetSearch(searchCount);
+                    Debug.Log(s);
                 }
 
                 SubjectDate.text = (s[0] ?? "").Trim().Replace("-", "/");
@@ -70,8 +72,8 @@ public class Subject : MonoBehaviour
                 }
                 else
                 {
-                    if (receiving > 0) SetArrowInfo(Color.blue, "출고", receiving.ToString());
-                    else if (release > 0) SetArrowInfo(Color.red, "입고", release.ToString());
+                    if (receiving > 0) SetArrowInfo(Color.blue, "입고", receiving.ToString());
+                    else if (release > 0) SetArrowInfo(Color.red, "출고", release.ToString());
                     else SetArrowInfo(Color.black, "대기", "???");
                 }
 
