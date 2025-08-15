@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115e580ff39b0864b90e812c7c38c708, type: 3}
+  m_Name: operators_ko
+  m_EditorClassIdentifier: 
+  fields:
+  - Date
+  - SubjectName
+  - CompanyName
+  - Release
+  - Receiving
+  - ReceivingTime
+  - Gugo
+  operators_ko:
+  - "\uD3EC\uD568"
+  - "\uAC19\uC74C"
+  - "\uC2DC\uC791"
+  - "\uB05D\uB0A8"

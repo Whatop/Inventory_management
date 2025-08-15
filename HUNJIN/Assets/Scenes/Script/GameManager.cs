@@ -72,6 +72,14 @@ public class GameManager : MonoBehaviour
     public TMP_InputField SubjectInput;
     public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput, GugoInput;
     public GameObject Loading;
+    public float loadingMinDuration = 0.35f;   // 최소 표시 시간(초)
+    public float loadingMaxTimeout = 15f;     // (옵션) 최대 표시 시간(안전장치)
+
+    private float _loadingShownAt = -1f;
+    private int _loadingCount = 0;             // 겹치는 로딩 카운트
+    private Coroutine _loadingHideCo = null;
+    private int _loadingTicket = 0;            // 새 로딩 시작마다 증가 → 대기 코루틴 무효화용
+    private float _loadingHardDeadline = -1f;  // (옵션) 강제 종료 시각
 
     // SearchScene
     public int Curpage = 0;
@@ -131,6 +139,7 @@ public class GameManager : MonoBehaviour
 
         SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
         main.SetActive(false);
+
     }
 
     // ---------- UI helpers ----------
@@ -140,8 +149,56 @@ public class GameManager : MonoBehaviour
             SubjectNameSearch[curScene].text = "";
     }
 
-    void StartLoading() => Loading?.SetActive(true);
-    void EndLoading() => Loading?.SetActive(false);
+    public void StartLoading()
+    {
+        _loadingCount++;
+        if (_loadingCount == 1)
+        {
+            _loadingTicket++;                          // 새 로딩 세션
+            _loadingShownAt = Time.realtimeSinceStartup;
+            _loadingHardDeadline = _loadingShownAt + loadingMaxTimeout;
+
+            if (_loadingHideCo != null)                // 이전 숨김 대기 중이면 취소
+            {
+                StopCoroutine(_loadingHideCo);
+                _loadingHideCo = null;
+            }
+            if (Loading != null) Loading.SetActive(true);
+        }
+    }
+
+    public void EndLoading()
+    {
+        if (_loadingCount > 0) _loadingCount--;
+        if (_loadingCount > 0) return;                 // 아직 진행 중인 로딩 있음
+
+        float elapsed = Time.realtimeSinceStartup - _loadingShownAt;
+        float remain = loadingMinDuration - elapsed;
+
+        if (remain <= 0f)                               // 최소 표시시간 충족 → 즉시 숨김
+        {
+            if (Loading != null) Loading.SetActive(false);
+            _loadingHideCo = null;
+        }
+        else                                            // 최소 시간 채우고 숨김
+        {
+            int expected = _loadingTicket;              // 이 세션의 티켓
+            if (_loadingHideCo != null) StopCoroutine(_loadingHideCo);
+            _loadingHideCo = StartCoroutine(HideLoadingAfter(remain, expected));
+        }
+    }
+
+    private System.Collections.IEnumerator HideLoadingAfter(float delay, int expectedTicket)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // 대기 중 새 로딩이 시작되었거나(_loadingTicket 변경) 다른 로딩이 돌아가면 숨기지 않음
+        if (_loadingCount == 0 && expectedTicket == _loadingTicket)
+        {
+            if (Loading != null) Loading.SetActive(false);
+        }
+        _loadingHideCo = null;
+    }
 
     // ---------- Enrollment ----------
     bool SetIDPass()
@@ -233,6 +290,39 @@ public class GameManager : MonoBehaviour
         }
         scrollViewEnom.UpdateScrollView();
     }
+    // 동적 필터를 적용하고 UI를 갱신
+    public void ApplyFiltersAndRefreshUI(System.Collections.Generic.List<FilterCondition> filters)
+    {
+        // repository는 기존에 GameManager에서 생성해둔 필드라고 가정
+        if (repository == null)
+        {
+            Debug.LogError("[GameManager] repository가 없습니다.");
+            return;
+        }
+
+        // 1) 레코드 필터
+        var filtered = repository.ApplyFilters(filters);
+
+        // 2) 오래 쓰는 구조로 매핑
+        MyCompanyDatabase = new System.Collections.Generic.List<CompanyList>();
+        for (int i = 0; i < filtered.Count; i++)
+        {
+            var r = filtered[i];
+            MyCompanyDatabase.Add(new CompanyList(
+                r.Date, r.SubjectName, r.Receiving, r.Release, r.CompanyName, r.ReceivingTime, r.Gugo
+            ));
+        }
+
+        // 3) 드롭다운/인덱스 재구축
+        BuildIndicesAndDropdowns();
+
+        // 4) 화면 갱신 (기존 흐름 재사용)
+        if (ScrollViewController.Instance != null)
+            ScrollViewController.Instance.DoSearch();
+
+        // 페이지/상태 텍스트 같은 거 갱신 필요하면 여기서 처리
+        UpdateAllCountBanner(MyCompanyDatabase, null);
+    }
 
     // ---------- 화면 탭 전환 ----------
     public void TabClick(string tabName)
@@ -304,8 +394,13 @@ public class GameManager : MonoBehaviour
 
         BuildIndicesAndDropdowns();
 
+        // 배너 표시 제어
+        UpdateAllCountBanner(MyCompanyDatabase, null);
+
         if (curType != "Enrollment" && curType != "Main" && curType != "Lost")
             ScrollViewController.Instance.DoSearch();
+
+
     }
 
     void BuildIndicesAndDropdowns()
@@ -335,6 +430,10 @@ public class GameManager : MonoBehaviour
                 dropdown[curScene].options.Add(new Dropdown.OptionData(comp));
             CompanyDrop.options.Add(new Dropdown.OptionData(comp));
         }
+        // 기본값 리셋
+        if (CompanyDrop != null) CompanyDrop.value = 0;
+        if (dropdown != null && dropdown.Length > curScene && dropdown[curScene] != null)
+            dropdown[curScene].value = 0;
     }
 
     // ---------- 검색 (기존 흐름 유지) ----------
@@ -377,6 +476,9 @@ public class GameManager : MonoBehaviour
                 count++;
             }
         }
+        // count 계산 직후
+        UpdateAllCountBanner(MySearchData, null);
+
         return SetupPaging(count);
     }
     public void searchButtonDown(int id)
@@ -419,13 +521,22 @@ public class GameManager : MonoBehaviour
     int SetupPaging(int total)
     {
         int save = total;
-        Maxpage = total / PageObject;
-        int count = (Maxpage == Curpage) ? (save % PageObject) : PageObject;
+        Maxpage = total / PageObject;                 // 0-based pages
+        int rem = save % PageObject;
+        if (rem == 0 && save > 0) rem = PageObject;     // 딱 떨어질 때 보정
+
+        int count = (Maxpage == Curpage) ? rem : PageObject;
+
         int ui = Curpage + 1;
         int uiMax = Maxpage + 1;
-        AllSubjectCountText[curScene].text = $"[{ui}/{uiMax}]";
+        if (AllSubjectCountText != null && AllSubjectCountText.Length > curScene && AllSubjectCountText[curScene] != null)
+            AllSubjectCountText[curScene].text = $"[{ui}/{uiMax}]";
+
+        RefreshPagingUI();                               // 화살표 표시 갱신
         return count;
     }
+
+
 
     public int SEadSearch() // 요약
     {
@@ -469,6 +580,7 @@ public class GameManager : MonoBehaviour
             int rec = int.TryParse(MySearchData[i].Receiving.Replace(",", ""), out var r2) ? r2 : 0;
             dex += rel; dex -= rec;
         }
+        UpdateAllCountBanner(MySearchData, SubjectNameSearch[curScene].text);
         return count;
     }
 
@@ -479,6 +591,7 @@ public class GameManager : MonoBehaviour
         int count = MyCompanyDatabase.Count;
         MySearchData.AddRange(MyCompanyDatabase);
         AllSubjectCountText[curScene].text = $"[{count}/{count}]";
+        UpdateAllCountBanner(MySearchData, null);
         return count;
     }
 
@@ -505,8 +618,57 @@ public class GameManager : MonoBehaviour
         }
         return dex;
     }
+void UpdateAllCountBanner(List<CompanyList> source, string subjectFilter)
+{
+    if (AllCount == null || AllCount.Length == 0) return;
 
-    public string[] GetSearch(int id)
+    int idx = curScene;
+        // 요약검색 + 상세 아님 → 배너 숨김
+        if (isSed && !isSubject)
+        {
+            idx = curScene;
+            if (AllCount != null && AllCount.Length > idx && AllCount[idx] != null)
+                AllCount[idx].gameObject.SetActive(false);
+            // 페이지 카운터 텍스트는 유지하고 싶으면 여기서 따로 다루세요.
+            return;
+        }
+        if (idx < 0 || idx >= AllCount.Length) idx = 0;
+    var label = AllCount[idx];
+    if (label == null) return;
+
+    int dex = 0, inQty = 0, outQty = 0, rows = 0;
+    for (int i = 0; i < source.Count; i++)
+    {
+        var r = source[i];
+        if (!string.IsNullOrEmpty(subjectFilter))
+        {
+            if (!string.Equals((r.SubjectName ?? "").Trim(),
+                               subjectFilter.Trim(),
+                               System.StringComparison.OrdinalIgnoreCase))
+                continue;
+        }
+
+        int rel = 0, rec = 0;
+        int.TryParse((r.Release ?? "0").Replace(",", "").Trim(), out rel);
+        int.TryParse((r.Receiving ?? "0").Replace(",", "").Trim(), out rec);
+
+        dex += rel - rec;
+        inQty += rel;
+        outQty += rec;
+        rows++;
+    }
+
+    string head = string.IsNullOrEmpty(subjectFilter) ? "전체" : subjectFilter.Trim();
+    string msg = dex < 0 ? (head + " - 재고 부족 : " + dex) : (head + " - 현재 재고 : " + dex);
+    label.text = msg + "  (입고 " + inQty + ", 출고 " + outQty + ", 항목 " + rows + ")";
+    label.gameObject.SetActive(true);
+
+    // 페이지 카운터 텍스트도 보이게
+    if (AllSubjectCountText != null && AllSubjectCountText.Length > idx && AllSubjectCountText[idx] != null)
+        AllSubjectCountText[idx].gameObject.SetActive(true);
+}
+
+public string[] GetSearch(int id)
     {
         string[] j = { "", "", "", "", "", "", "", "" };
         if (id < 0 || id >= MySearchData.Count) return j;
@@ -523,9 +685,33 @@ public class GameManager : MonoBehaviour
         j[3] = MyCompanyDatabase[id].Receiving; j[4] = MyCompanyDatabase[id].CompanyName; j[6] = MyCompanyDatabase[id].ReceivingTime; j[7] = MyCompanyDatabase[id].Gugo;
         return j;
     }
+    // GameManager 클래스 안에 추가
+    void RefreshPagingUI()
+    {
+        // Maxpage: 0이면 페이지 1개(0기반)
+        bool multiplePages = Maxpage > 0;
+        bool showArrows = multiplePages && curType != "Lost";
 
-    public void NextPage() { if (Curpage < Maxpage) Curpage++; }
-    public void PrevPage() { if (Curpage > 0) Curpage--; }
+        isArrow = showArrows; // 기존 Update()에서 이 값으로 표시 제어도 하니 유지
+        if (LeftArrow != null) LeftArrow.SetActive(showArrows);
+        if (RightArrow != null) RightArrow.SetActive(showArrows);
+    }
+
+    public void NextPage()
+    {
+        if (Maxpage <= 0) return;      // 페이지 1개면 이동 불가
+        if (Curpage < Maxpage) Curpage++;
+        RefreshPagingUI();
+        ScrollViewController.Instance?.DoSearch();
+    }
+
+    public void PrevPage()
+    {
+        if (Maxpage <= 0) return;      // 페이지 1개면 이동 불가
+        if (Curpage > 0) Curpage--;
+        RefreshPagingUI();
+        ScrollViewController.Instance?.DoSearch();
+    }
 
     // Android 종료키 처리 및 화살표 표시 유지
     private void Update()
@@ -542,6 +728,16 @@ public class GameManager : MonoBehaviour
         else
         {
             LeftArrow.SetActive(isArrow); RightArrow.SetActive(isArrow);
+        }
+        if (Loading != null && Loading.activeSelf)
+        {
+            if (loadingMaxTimeout > 0f && Time.realtimeSinceStartup > _loadingHardDeadline)
+            {
+                // 너무 오래 켜져 있으면 강제 종료 (디버그/안전장치)
+                _loadingCount = 0;
+                Loading.SetActive(false);
+                _loadingHideCo = null;
+            }
         }
     }
 

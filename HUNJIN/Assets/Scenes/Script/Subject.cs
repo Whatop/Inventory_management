@@ -109,9 +109,25 @@ public class Subject : MonoBehaviour
 
     private void ShowAllSubjectCountText()
     {
-        GameManager.Instance.AllSubjectCountText[GameManager.Instance.curScene].gameObject.SetActive(true);
-        GameManager.Instance.AllCount[GameManager.Instance.curScene].gameObject.SetActive(true);
+        var gm = GameManager.Instance;
+        if (gm == null) return;
+
+        // 요약 + 상세 아님 → AllCount는 숨기기, 페이지 카운트는 필요시 유지
+        if (gm.isSed && !gm.isSubject)
+        {
+            if (gm.AllCount != null && gm.AllCount.Length > gm.curScene && gm.AllCount[gm.curScene] != null)
+                gm.AllCount[gm.curScene].gameObject.SetActive(false);
+
+            if (gm.AllSubjectCountText != null && gm.AllSubjectCountText.Length > gm.curScene && gm.AllSubjectCountText[gm.curScene] != null)
+                gm.AllSubjectCountText[gm.curScene].gameObject.SetActive(true);
+            return;
+        }
+
+        // 기존 동작(상세/요약 외 상황)
+        gm.AllSubjectCountText[gm.curScene].gameObject.SetActive(true);
+        gm.AllCount[gm.curScene].gameObject.SetActive(true);
     }
+
 
     public void SearchButton(Text text)
     {
