@@ -148,6 +148,12 @@ public class GameManager : MonoBehaviour
         if (SubjectNameSearch != null && SubjectNameSearch.Length > curScene && SubjectNameSearch[curScene] != null)
             SubjectNameSearch[curScene].text = "";
     }
+    
+    // ---------- UI helpers ----------
+    public void CheckBoxF()
+    {
+        CheckBoxs[0].SetActive(false);
+    }
 
     public void StartLoading()
     {
@@ -202,16 +208,36 @@ public class GameManager : MonoBehaviour
 
     // ---------- Enrollment ----------
     bool SetIDPass()
-    {
+    {   // 모델명 비었는지 확인
+        if (string.IsNullOrWhiteSpace(SubjectInput.text))
+            return false;
+
+        bool hasReceiving = !string.IsNullOrWhiteSpace(ReceivingInput.text);
+        bool hasRelease = !string.IsNullOrWhiteSpace(ReleaseInput.text);
+        if (!hasReceiving && !hasRelease)
+            return false;
+
+        // 숫자 검증 (선택 사항)
+        if (hasReceiving && !int.TryParse(ReceivingInput.text, out _))
+            return false;
+        if (hasRelease && !int.TryParse(ReleaseInput.text, out _))
+            return false;
+
         // 간단히 빈값 허용. 필요 시 validation 강화 가능
         return true;
     }
 
     public void Register()
     {
-        if (!SetIDPass()) { print("잘못된 입력입니다."); return; }
-
-        CheckBoxs[0].SetActive(true);
+        if (!SetIDPass())
+        {
+            print("잘못된 입력입니다.");
+            return;
+        }
+        else
+        {
+            CheckBoxs[0].SetActive(true);
+        }
 
         var form = new WWWForm();
         form.AddField("order", "register");
