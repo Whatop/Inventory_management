@@ -98,6 +98,8 @@ public class GameManager : MonoBehaviour
     string CodeURL = "https://script.google.com/macros/s/AKfycbw3D8WZBrlTQU6q003Vi7u7Mn91NM-4nUotIIuY1qI1iUD_gN1xdcSh3UjyCaSZnHO-2A/exec";
     public int CompanySearch;
     public int SeachIndex = 1;
+    // 현재 검색 모드: true = 텍스트 검색, false = 요약(전체) 검색
+    public bool IsTextSearchMode = false;
 
     void Awake()
     {
@@ -284,7 +286,8 @@ public class GameManager : MonoBehaviour
         ReleaseInput.text = "";
         ReceivingInput.text = "";
         GugoInput.text = "";
-        NoneDrop.captionText.text = "부서";
+        NoneDrop.value = 0;
+        NoneDrop.RefreshShownValue();
         if (AllCount != null && AllCount.Length > curScene && AllCount[curScene] != null)
             AllCount[curScene].text = "";
         scrollViewController.ResetEnId();
@@ -304,14 +307,17 @@ public class GameManager : MonoBehaviour
         var added = new HashSet<string>();
         int currentIndex = CompanyDrop.value;
         string company = CompanyDrop.options[currentIndex].text;
-
+        
         foreach (var nc in NameCompanyData)
         {
             if (company == nc.Company)
             {
                 string trimmed = nc.Name.Trim().ToLower();
                 if (trimmed.Contains(SubjectInput.text.Trim().ToLower()) && added.Add(trimmed))
+                {
                     curData.Add(nc.Name);
+                
+                }
             }
         }
         scrollViewEnom.UpdateScrollView();
@@ -486,13 +492,19 @@ public class GameManager : MonoBehaviour
 
     public int ProductSearch() // 텍스트 검색
     {
+        IsTextSearchMode = true;    // ★ 추가
         isArrow = true; isSed = true;
         var dist = MyCompanyDatabase.Select(p => new { p.SubjectName, p.CompanyName, p.Gugo }).Distinct().ToList();
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
 
         int count = 0;
-        string key = (SubjectNameSearch[curScene].text ?? "").Trim().ToLower();
+        string key = new string(((SubjectNameSearch[curScene].text) ?? "")
+                  // 1) 현재 검색 인풋의 텍스트를 꺼내고, null이면 빈 문자열로 대체
+                  .Where(c => !char.IsWhiteSpace(c)).ToArray())
+                  // 2) 문자들을 순회하며 '공백이 아닌 것'만 골라 배열로 만든 뒤 새 문자열 생성
+                  .ToLowerInvariant();
+        // 3) 문화권 영향 없이 소문자 변환(대소문자 무시 비교용)
 
         foreach (var obj in dist)
         {
@@ -507,26 +519,51 @@ public class GameManager : MonoBehaviour
 
         return SetupPaging(count);
     }
+    // GameManager.cs
+
     public void searchButtonDown(int id)
     {
         // id 범위 체크
         if (curData == null || id < 0 || id >= curData.Count) return;
 
-        // 선택한 이름을 등록 화면의 입력창에 반영
+        // 1) 선택한 이름을 등록 화면 입력창에 반영
         if (SubjectInput != null)
         {
             SubjectInput.text = curData[id];
-            // 커서를 맨 끝으로
             try { SubjectInput.caretPosition = SubjectInput.text.Length; } catch { }
         }
 
-        // 선택 후 자동완성 리스트 닫기
+        // 2) [추가] ReceivingTime(=부서) 값을 찾아 NoneDrop을 자동 선택
+        SetDepartmentByReceivingTime(SubjectInput.text);
+
+        // 3) 자동완성 리스트 닫기
         curData.Clear();
         if (scrollViewEnom != null) scrollViewEnom.UpdateScrollView();
     }
 
+    // [추가] ReceivingTime(=부서) 기준으로 NoneDrop을 맞춰주는 메서드
+    void SetDepartmentByReceivingTime(string subject)
+    {
+        if (string.IsNullOrWhiteSpace(subject) || NoneDrop == null) return;
+
+        // 동일 품목 중 "가장 최근" 레코드를 사용 (목록이 최신순이라고 가정하기 어려우니 LastOrDefault)
+        var rec = MyCompanyDatabase.LastOrDefault(r =>
+            string.Equals((r.SubjectName ?? "").Trim(), subject.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        var dept = (rec?.ReceivingTime ?? "").Trim();
+        if (string.IsNullOrEmpty(dept)) return;
+
+        // 드롭다운 옵션에서 같은 텍스트를 찾으면 value로 변경, 없으면 캡션만 맞춤(임시 표시)
+        int idx = NoneDrop.options.FindIndex(o =>
+            string.Equals((o.text ?? "").Trim(), dept, StringComparison.OrdinalIgnoreCase));
+
+        if (idx >= 0) NoneDrop.value = idx;
+        else NoneDrop.captionText.text = dept; // 옵션에 없을 때도 사용자에겐 보이도록
+    }
+
     public int ProductSearch(string text) // over
     {
+        IsTextSearchMode = true;    // ★ 추가
         MySearchData.Clear();
         int count = 0;
         string key = (SubjectNameSearch[curScene].text ?? "").Trim().ToLower();
@@ -566,6 +603,7 @@ public class GameManager : MonoBehaviour
 
     public int SEadSearch() // 요약
     {
+        IsTextSearchMode = false;   // ★ 추가
         isArrow = true; isSed = true;
         var dist = MyCompanyDatabase.Select(p => new { p.SubjectName, p.CompanyName, p.Gugo }).Distinct().ToList();
         MySearchData.Clear();
@@ -582,6 +620,7 @@ public class GameManager : MonoBehaviour
 
     public int DOTextSearch(string text)
     {
+        IsTextSearchMode = true;    // ★ 추가
         MySearchData.Clear();
         OnDropdownEvent(CompanySearch);
         int count = 0;

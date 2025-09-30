@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
@@ -10,9 +10,9 @@ using UnityEditor;
 [CustomEditor(typeof(ScrollViewController))]
 public class ObjectPoolerEditor : Editor
 {
-    const string INFO = "Ç®¸µÇÑ ¿ÀºêÁ§Æ®¿¡ ´ÙÀ½À» ÀûÀ¸¼¼¿ä \nvoid OnDisable()\n{\n" +
-    "    ObjectPooler.ReturnToPool(gameObject);    // ÇÑ °´Ã¼¿¡ ÇÑ¹ø¸¸ \n" +
-    "    CancelInvoke();    // Monobehaviour¿¡ Invoke°¡ ÀÖ´Ù¸é \n}";
+    const string INFO = "í’€ë§í•œ ì˜¤ë¸Œì íŠ¸ì— ë‹¤ìŒì„ ì ìœ¼ì„¸ìš” \nvoid OnDisable()\n{\n" +
+    "    ObjectPooler.ReturnToPool(gameObject);    // í•œ ê°ì²´ì— í•œë²ˆë§Œ \n" +
+    "    CancelInvoke();    // Monobehaviourì— Invokeê°€ ìˆë‹¤ë©´ \n}";
 
     public override void OnInspectorGUI()
     {
@@ -27,7 +27,22 @@ public class ObjectPoolerEditor : Editor
 public class ScrollViewController : MonoBehaviour
 {
     static ScrollViewController inst;
+   
     void Awake() => inst = this;
+
+  
+    public static ScrollViewController Instance
+    {
+        get
+        {
+            if (null == inst)
+            {
+                return null;
+            }
+            return inst;
+        }
+    }
+
 
     public GameManager gameManager;
     public ScrollRect scrollRect;
@@ -39,7 +54,7 @@ public class ScrollViewController : MonoBehaviour
     bool first;
     public int reveprod = 0;
 
-    //À¯¾Ğ, ¿ëÁ¢, Á¶¸³, ÀüÃ¼
+    //ìœ ì••, ìš©ì ‘, ì¡°ë¦½, ì „ì²´
 
     [Serializable]
     public class Pool
@@ -53,9 +68,9 @@ public class ScrollViewController : MonoBehaviour
     List<GameObject> spawnObjects;
     public Dictionary<string, Queue<GameObject>> poolDictionary;
 
-    readonly string INFO = " ¿ÀºêÁ§Æ®¿¡ ´ÙÀ½À» ÀûÀ¸¼¼¿ä \\nvoid OnDisable()\\n{\\n" +
-        "    ObjectPooler.ReturnToPool(gameObject);    // ÇÑ °´Ã¼¿¡ ÇÑ¹ø¸¸ \\n" +
-        "    CancelInvoke();    // Monobehaviour¿¡ Invoke°¡ ÀÖ´Ù¸é \\n}";
+    readonly string INFO = " ì˜¤ë¸Œì íŠ¸ì— ë‹¤ìŒì„ ì ìœ¼ì„¸ìš” \\nvoid OnDisable()\\n{\\n" +
+        "    ObjectPooler.ReturnToPool(gameObject);    // í•œ ê°ì²´ì— í•œë²ˆë§Œ \\n" +
+        "    CancelInvoke();    // Monobehaviourì— Invokeê°€ ìˆë‹¤ë©´ \\n}";
 
     public int GetId()
     {
@@ -67,28 +82,22 @@ public class ScrollViewController : MonoBehaviour
     {
         spId = -1;
     }
-    public int GetEnId()
-    {
-        enId++;
-        return enId;
-    }
-
+    /// <summary>
+    /// ì¦ê°€í˜• idë¥¼ 0ìœ¼ë¡œ ë¦¬ì…‹. ë¦¬ìŠ¤íŠ¸ë¥¼ ë‹¤ì‹œ ê·¸ë¦¬ê¸° ì§ì „ì— ë°˜ë“œì‹œ í˜¸ì¶œ.
+    /// </summary>
     public void ResetEnId()
     {
-        enId = -1;
+        enId = 0;
     }
 
-    public static ScrollViewController Instance
+    /// <summary>
+    /// í˜¸í™˜ìš©: í•„ìš”í•˜ë©´ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë‚˜, ì´ì œëŠ” ì¸ë±ìŠ¤ ê¸°ë°˜ì„ ê¶Œì¥.
+    /// </summary>
+    public int GetEnId()
     {
-        get
-        {
-            if (null == inst)
-            {
-                return null;
-            }
-            return inst;
-        }
+        return enId++;
     }
+
 
     public static GameObject SpawnFromPool(string tag, Vector3 position) =>
         inst._SpawnFromPool(tag, position, Quaternion.identity);
@@ -161,7 +170,7 @@ public class ScrollViewController : MonoBehaviour
         if (!poolDictionary.ContainsKey(tag))
             throw new Exception($"Pool with tag {tag} doesn't exist.");
 
-        // Å¥¿¡ ¾øÀ¸¸é »õ·Î Ãß°¡
+        // íì— ì—†ìœ¼ë©´ ìƒˆë¡œ ì¶”ê°€
         Queue<GameObject> poolQueue = poolDictionary[tag];
         if (poolQueue.Count <= 0)
         {
@@ -170,7 +179,7 @@ public class ScrollViewController : MonoBehaviour
             ArrangePool(obj);
         }
 
-        // Å¥¿¡¼­ ²¨³»¼­ »ç¿ë
+        // íì—ì„œ êº¼ë‚´ì„œ ì‚¬ìš©
         GameObject objectToSpawn = poolQueue.Dequeue();
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
@@ -184,7 +193,7 @@ public class ScrollViewController : MonoBehaviour
         spawnObjects = new List<GameObject>();
         poolDictionary = new Dictionary<string, Queue<GameObject>>();
 
-        // ¹Ì¸® »ı¼º
+        // ë¯¸ë¦¬ ìƒì„±
         foreach (Pool pool in pools)
         {
             poolDictionary.Add(pool.tag, new Queue<GameObject>());
@@ -194,11 +203,11 @@ public class ScrollViewController : MonoBehaviour
                 ArrangePool(obj);
             }
 
-            // OnDisable¿¡ ReturnToPool ±¸Çö¿©ºÎ¿Í Áßº¹±¸Çö °Ë»ç
+            // OnDisableì— ReturnToPool êµ¬í˜„ì—¬ë¶€ì™€ ì¤‘ë³µêµ¬í˜„ ê²€ì‚¬
             if (poolDictionary[pool.tag].Count <= 0)
                 Debug.LogError($"{pool.tag}{INFO}");
             else if (poolDictionary[pool.tag].Count != pool.size)
-                Debug.LogError($"{pool.tag}¿¡ ReturnToPoolÀÌ Áßº¹µË´Ï´Ù");
+                Debug.LogError($"{pool.tag}ì— ReturnToPoolì´ ì¤‘ë³µë©ë‹ˆë‹¤");
         }
     }
 
@@ -207,7 +216,7 @@ public class ScrollViewController : MonoBehaviour
         var obj = Instantiate(prefab, scrollRect.content).GetComponent<RectTransform>();
         obj.name = tag;
         uiObjects.Add(obj);
-        obj.gameObject.SetActive(false); // ºñÈ°¼ºÈ­½Ã ReturnToPoolÀ» ÇÏ¹Ç·Î Enqueue°¡ µÊ
+        obj.gameObject.SetActive(false); // ë¹„í™œì„±í™”ì‹œ ReturnToPoolì„ í•˜ë¯€ë¡œ Enqueueê°€ ë¨
         return obj.gameObject;
     }
 
@@ -215,7 +224,7 @@ public class ScrollViewController : MonoBehaviour
     {
     }
 
-    // °Ë»ö ÈÄ ±× °Ë»ö ¾ç¸¸Å­ Á¤·Ä
+    // ê²€ìƒ‰ í›„ ê·¸ ê²€ìƒ‰ ì–‘ë§Œí¼ ì •ë ¬
     public void Inquiry()
     {
         float y = 5f;
@@ -241,7 +250,7 @@ public class ScrollViewController : MonoBehaviour
         }
     }
 
-    public void Search() // ¿ä¾à°Ë»öÀ¸·Î º¯°æÇØ¾ßµÊ
+    public void Search() // ìš”ì•½ê²€ìƒ‰ìœ¼ë¡œ ë³€ê²½í•´ì•¼ë¨
     {
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
         gameManager.ResetData();
@@ -371,12 +380,14 @@ public class ScrollViewController : MonoBehaviour
   
     public void DoSearch()
     {
-        gameManager.OnDropdownEvent(0);
         int c = uiObjects.FindAll(x => x.name == "Subject").Count;
         gameManager.isSubject = false;
         ResetId();
         dont = true;
-        int count = gameManager.SEadSearch();
+        // âœ… í˜„ì¬ ëª¨ë“œì— ë§ê²Œ ë‹¤ì‹œ ê²€ìƒ‰
+        int count = gameManager.IsTextSearchMode
+            ? gameManager.ProductSearch()   // í…ìŠ¤íŠ¸ í•„í„° ìœ ì§€
+            : gameManager.SEadSearch();     // ìš”ì•½(ì „ì²´) ëª¨ë“œ
         if (count > c - reveprod)
         {
             for (int i = 0; i < c - reveprod; i++)
@@ -402,7 +413,7 @@ public class ScrollViewController : MonoBehaviour
 
     void ArrangePool(GameObject obj)
     {
-        // Ãß°¡µÈ ¿ÀºêÁ§Æ® ¹­¾î¼­ Á¤·Ä
+        // ì¶”ê°€ëœ ì˜¤ë¸Œì íŠ¸ ë¬¶ì–´ì„œ ì •ë ¬
         bool isFind = false;
         for (int i = 0; i < transform.childCount; i++)
         {
