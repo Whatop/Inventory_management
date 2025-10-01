@@ -49,7 +49,8 @@ public class ScrollViewController : MonoBehaviour
     public float space = 10f;
     public List<RectTransform> uiObjects = new List<RectTransform>();
     private int spId = -1;
-    private int enId = -1;
+    [SerializeField]
+    private int enId = -10;
     public bool dont = false;
     bool first;
     public int reveprod = 0;
@@ -87,7 +88,7 @@ public class ScrollViewController : MonoBehaviour
     /// </summary>
     public void ResetEnId()
     {
-        enId = 0;
+        enId = -11;
     }
 
     /// <summary>
@@ -95,7 +96,8 @@ public class ScrollViewController : MonoBehaviour
     /// </summary>
     public int GetEnId()
     {
-        return enId++;
+        enId++;
+        return enId;
     }
 
 
@@ -220,9 +222,6 @@ public class ScrollViewController : MonoBehaviour
         return obj.gameObject;
     }
 
-    public void Init()
-    {
-    }
 
     // 검색 후 그 검색 양만큼 정렬
     public void Inquiry()

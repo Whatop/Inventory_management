@@ -589,7 +589,7 @@ ScriptsOnlyBuild:
     className: AudioPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: 0643464e42b71579cf8d0456a39c3571
+      Hash: 4f19e5604001c64a8cc0561fa44e8515
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -709,7 +709,7 @@ ScriptsOnlyBuild:
     className: TMP_Settings
   - hash:
       serializedVersion: 2
-      Hash: 8b87b22bfdf5e3df34a01996a8012184
+      Hash: 3c11a4833980cbda4cb718e4b7a4de80
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: ScrollViewController

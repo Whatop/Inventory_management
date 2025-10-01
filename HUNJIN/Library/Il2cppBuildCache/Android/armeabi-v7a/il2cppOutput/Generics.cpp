@@ -261,6 +261,8 @@ struct U3CU3Ec_t80130F43AA0F2754A17EECFF27996A0AC7CDF950;
 struct U3CU3Ec_t22EA2BC6A4B6ECEEF70B43822DAAF893FFFBF8A1;
 // ScrollViewController/<>c__27`1<System.Object>
 struct U3CU3Ec__27_1_t6E88BF3078428A602FB9B1DF3DE4C2EAE902058F;
+// System.Linq.Enumerable/<>c__DisplayClass6_0`1<System.Char>
+struct U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D;
 // System.Linq.Enumerable/<>c__DisplayClass6_0`1<System.Object>
 struct U3CU3Ec__DisplayClass6_0_1_t436699F540264FEBBA7773CE118E9F03FDDC5C3F;
 // System.Linq.Enumerable/<>c__DisplayClass7_0`3<System.Object,System.Object,System.Object>
@@ -423,6 +425,8 @@ struct Func_2_t44F36790F9746FCE5ABFDE6205B6020B2578F6DD;
 struct Func_2_t59E5EE359C575BAE84083A82848C07C4F342D995;
 // System.Func`2<System.Threading.Tasks.Task`1<System.Threading.Tasks.Task>,System.Threading.Tasks.Task`1<System.Threading.Tasks.VoidTaskResult>>
 struct Func_2_t99C75F5817AC4490145734D823B7E8ED9A840728;
+// System.Func`2<System.Char,System.Boolean>
+struct Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A;
 // System.Func`2<System.Object,System.Collections.Generic.IEnumerable`1<System.Object>>
 struct Func_2_tD457CA07229B6835F9D0AB141D4F1A7455A8AF29;
 // System.Func`2<System.Object,System.Boolean>
@@ -1044,6 +1048,36 @@ public:
 	{
 		___U3CU3E9__27_0_1 = value;
 		Il2CppCodeGenWriteBarrier((void**)(&___U3CU3E9__27_0_1), (void*)value);
+	}
+};
+
+
+// System.Linq.Enumerable/<>c__DisplayClass6_0`1<System.Char>
+struct U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D  : public RuntimeObject
+{
+public:
+	// System.Func`2<TSource,System.Boolean> System.Linq.Enumerable/<>c__DisplayClass6_0`1::predicate1
+	Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * ___predicate1_0;
+	// System.Func`2<TSource,System.Boolean> System.Linq.Enumerable/<>c__DisplayClass6_0`1::predicate2
+	Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * ___predicate2_1;
+
+public:
+	inline static int32_t get_offset_of_predicate1_0() { return static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D, ___predicate1_0)); }
+	inline Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * get_predicate1_0() const { return ___predicate1_0; }
+	inline Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A ** get_address_of_predicate1_0() { return &___predicate1_0; }
+	inline void set_predicate1_0(Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * value)
+	{
+		___predicate1_0 = value;
+		Il2CppCodeGenWriteBarrier((void**)(&___predicate1_0), (void*)value);
+	}
+
+	inline static int32_t get_offset_of_predicate2_1() { return static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D, ___predicate2_1)); }
+	inline Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * get_predicate2_1() const { return ___predicate2_1; }
+	inline Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A ** get_address_of_predicate2_1() { return &___predicate2_1; }
+	inline void set_predicate2_1(Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * value)
+	{
+		___predicate2_1 = value;
+		Il2CppCodeGenWriteBarrier((void**)(&___predicate2_1), (void*)value);
 	}
 };
 
@@ -7505,6 +7539,15 @@ public:
 };
 
 
+// System.Func`2<System.Char,System.Boolean>
+struct Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A  : public MulticastDelegate_t
+{
+public:
+
+public:
+};
+
+
 // System.Func`2<System.Object,System.Collections.Generic.IEnumerable`1<System.Object>>
 struct Func_2_tD457CA07229B6835F9D0AB141D4F1A7455A8AF29  : public MulticastDelegate_t
 {
@@ -9098,6 +9141,51 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject * U3CU3Ec__27_1_U3CGetAllPoolsU
 		RuntimeObject * L_1;
 		L_1 = ((  RuntimeObject * (*) (GameObject_tC000A2E1A7CF1E10FD7BA08863287C072207C319 *, const RuntimeMethod*))IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 3)->methodPointer)((GameObject_tC000A2E1A7CF1E10FD7BA08863287C072207C319 *)L_0, /*hidden argument*/IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 3));
 		return (RuntimeObject *)L_1;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+// System.Void System.Linq.Enumerable/<>c__DisplayClass6_0`1<System.Char>::.ctor()
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass6_0_1__ctor_mE5C24B25C9C2D54461CD63EC86253A127E544FAE_gshared (U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D * __this, const RuntimeMethod* method)
+{
+	{
+		NullCheck((RuntimeObject *)__this);
+		Object__ctor_m88880E0413421D13FD95325EDCE231707CE1F405((RuntimeObject *)__this, /*hidden argument*/NULL);
+		return;
+	}
+}
+// System.Boolean System.Linq.Enumerable/<>c__DisplayClass6_0`1<System.Char>::<CombinePredicates>b__0(TSource)
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass6_0_1_U3CCombinePredicatesU3Eb__0_m8D70242F1B8786B3BEC69AD7C4C896A951192CE9_gshared (U3CU3Ec__DisplayClass6_0_1_t550CB8B498D58C4A929443BEBD6BB3A0A008B41D * __this, Il2CppChar ___x0, const RuntimeMethod* method)
+{
+	{
+		Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * L_0 = (Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)__this->get_predicate1_0();
+		Il2CppChar L_1 = ___x0;
+		NullCheck((Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)L_0);
+		bool L_2;
+		L_2 = ((  bool (*) (Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *, Il2CppChar, const RuntimeMethod*))IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 0)->methodPointer)((Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)L_0, (Il2CppChar)L_1, /*hidden argument*/IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 0));
+		if (!L_2)
+		{
+			goto IL_001b;
+		}
+	}
+	{
+		Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A * L_3 = (Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)__this->get_predicate2_1();
+		Il2CppChar L_4 = ___x0;
+		NullCheck((Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)L_3);
+		bool L_5;
+		L_5 = ((  bool (*) (Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *, Il2CppChar, const RuntimeMethod*))IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 0)->methodPointer)((Func_2_t12237805D7B3E966E36DB4327BA1F80B724C4B9A *)L_3, (Il2CppChar)L_4, /*hidden argument*/IL2CPP_RGCTX_METHOD_INFO(method->klass->rgctx_data, 0));
+		return (bool)L_5;
+	}
+
+IL_001b:
+	{
+		return (bool)0;
 	}
 }
 #ifdef __clang__
