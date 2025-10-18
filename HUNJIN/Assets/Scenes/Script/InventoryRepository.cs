@@ -22,6 +22,17 @@ public class InventoryRepository
     {
         _config = config;
     }
+    public void Invalidate(string deptKey = null)
+    {
+        if (string.IsNullOrEmpty(deptKey)) _cache.Clear();
+        else _cache.Remove(deptKey);
+    }
+
+    public IEnumerator RefreshForce(string deptKey)
+    {
+        Invalidate(deptKey);
+        yield return Refresh(deptKey);
+    }
 
     public IEnumerator Refresh(string deptKey)
     {

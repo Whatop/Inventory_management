@@ -13,6 +13,9 @@ public class DynamicFilterPanel : MonoBehaviour
     public Button applyButton;
 
     private readonly List<FilterRowUI> rows = new List<FilterRowUI>();
+    [Header("임시적용 패널")]
+    [SerializeField] private GameObject panelRoot;     // 전체 패널(컨테이너)
+    private bool _initialized;
 
     void Awake()
     {
@@ -20,10 +23,33 @@ public class DynamicFilterPanel : MonoBehaviour
         if (clearButton != null) clearButton.onClick.AddListener(ClearRows);
         if (applyButton != null) applyButton.onClick.AddListener(ApplyFilters);
 
+
         // 최소 1행
         if (rows.Count == 0) AddRow();
     }
+    private void EnsureInitialized()
+    {
+        if (_initialized) return;
+        if (rows.Count == 0) AddRow();
+        _initialized = true;
+    }
 
+    public void ShowPanel()
+    {
+        EnsureInitialized();
+
+        if (panelRoot != null && !panelRoot.activeSelf)
+            panelRoot.SetActive(true);
+
+        // 첫 프레임에 레이아웃이 비어 보이는 것 방지
+        if (rowsParent != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rowsParent);
+    }
+    // ▼ 닫기 버튼/외부에서 호출: 패널 닫기
+    public void HidePanel()
+    {
+        if (panelRoot != null) panelRoot.SetActive(false);
+    }
     void AddRow()
     {
         if (rowPrefab == null || rowsParent == null || config == null) return;

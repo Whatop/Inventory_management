@@ -390,6 +390,9 @@ public class GameManager : MonoBehaviour
 
         if (tabName != "Enrollment" && tabName != "Main")
         {
+            if (tabName == "All")
+                repository.Invalidate("All");         
+
             StartCoroutine(Lookup(tabName));
             main.SetActive(true);
             if (tabName == "Lost") StartCoroutine(Lookup("All"));
