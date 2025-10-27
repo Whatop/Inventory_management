@@ -1,4 +1,3 @@
-// ScrollObject.cs
 using UnityEngine;
 
 public class ScrollObject : MonoBehaviour

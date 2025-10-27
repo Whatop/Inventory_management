@@ -71,7 +71,13 @@ public class GameManager : MonoBehaviour
     public Dropdown CompanyDrop, NoneDrop;
     public TMP_InputField SubjectInput;
     public InputField DateInput, TimeInput, ReleaseInput, ReceivingInput, GugoInput;
+    public TextMeshProUGUI curCount;
     public GameObject Loading;
+
+    public Button checkButton;
+    public bool isAllCount = false;
+    public Sprite[] buttons;
+    
     public float loadingMinDuration = 0.35f;   // 최소 표시 시간(초)
     public float loadingMaxTimeout = 15f;     // (옵션) 최대 표시 시간(안전장치)
 
@@ -100,6 +106,20 @@ public class GameManager : MonoBehaviour
     public int SeachIndex = 1;
     // 현재 검색 모드: true = 텍스트 검색, false = 요약(전체) 검색
     public bool IsTextSearchMode = false;
+
+    public void ToggleButton()
+    {
+        if (isArrow)
+        {
+            isArrow = false;
+            checkButton.GetComponent<Image>().sprite = buttons[0];
+        }
+        else
+        {
+            isArrow = true;
+            checkButton.GetComponent<Image>().sprite = buttons[1];
+        }
+    }
 
     void Awake()
     {
@@ -142,6 +162,15 @@ public class GameManager : MonoBehaviour
         SubjectInput.onValueChanged.AddListener(OnInputValueChanged);
         main.SetActive(false);
 
+        if (checkButton != null)
+        {
+            checkButton.onClick.RemoveAllListeners();
+            checkButton.onClick.AddListener(() =>
+            {
+                isAllCount = !isAllCount;                  // 토글
+                ScrollViewController.Instance?.DoSearch(); // 리스트 갱신
+            });
+        }
     }
 
     // ---------- UI helpers ----------
@@ -155,6 +184,47 @@ public class GameManager : MonoBehaviour
     public void CheckBoxF()
     {
         CheckBoxs[0].SetActive(false);
+    }
+    int GetCurrentQtyBySubject(string subject, bool receivingMinusRelease = true)
+    {
+        if (string.IsNullOrWhiteSpace(subject)) return 0;
+        string key = subject.Trim();
+
+        int qty = 0;
+        foreach (var r in MyCompanyDatabase)
+        {
+            // 같은 품목만 합산
+            if (!string.Equals((r.SubjectName ?? "").Trim(), key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            int rel = 0, rec = 0;
+            int.TryParse((r.Receiving ?? "0").Replace(",", "").Trim(), out rel);
+            int.TryParse((r.Release ?? "0").Replace(",", "").Trim(), out rec);
+
+            // 재고 정의: 입고 - 출고 (원하시면 false로 바꿔 rel - rec 사용)
+            qty += receivingMinusRelease ? (rec - rel) : (rel - rec);
+        }
+        return qty;
+    }
+    public int GetTotalQtyBySubject(string subject)
+    {
+        if (string.IsNullOrWhiteSpace(subject)) return 0;
+        string key = subject.Trim();
+
+        int qty = 0;
+        foreach (var r in MyCompanyDatabase)
+        {
+            if (!string.Equals((r.SubjectName ?? "").Trim(), key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            int rel = 0, rec = 0;
+            int.TryParse((r.Release ?? "0").Replace(",", "").Trim(), out rel);
+            int.TryParse((r.Receiving ?? "0").Replace(",", "").Trim(), out rec);
+
+            // 재고 = 입고 - 출고
+            qty += (rec - rel);
+        }
+        return qty;
     }
 
     public void StartLoading()
@@ -258,8 +328,11 @@ public class GameManager : MonoBehaviour
         CompanyDrop.value = 0;
         NoneDrop.value = 0;
 
+        StartLoading();
         StartCoroutine(Post(form));
     }
+
+    
 
     IEnumerator Post(WWWForm form)
     {
@@ -271,6 +344,7 @@ public class GameManager : MonoBehaviour
         }
         // 등록 후 최신 데이터 갱신 (All 기준)
         StartCoroutine(Lookup("All"));
+        EndLoading();
     }
 
     // ---------- Search + Paging ----------
@@ -284,6 +358,7 @@ public class GameManager : MonoBehaviour
             AllSubjectCountText[curScene].text = "[0/0]";
         SubjectInput.text = "";
         ReleaseInput.text = "";
+        if (curCount != null) curCount.text = ""; // 또는 "0"
         ReceivingInput.text = "";
         GugoInput.text = "";
         NoneDrop.value = 0;
@@ -529,14 +604,22 @@ public class GameManager : MonoBehaviour
         // id 범위 체크
         if (curData == null || id < 0 || id >= curData.Count) return;
 
-        // 1) 선택한 이름을 등록 화면 입력창에 반영
+        // ...기존 코드...
         if (SubjectInput != null)
         {
             SubjectInput.text = curData[id];
             try { SubjectInput.caretPosition = SubjectInput.text.Length; } catch { }
         }
+        // 입력 정규화
+        SubjectInput.text = SubjectInput.text.Trim().Replace(" ", "").ToLower();
 
-        // 2) [추가] ReceivingTime(=부서) 값을 찾아 NoneDrop을 자동 선택
+        // ▼ 선택된 모델 재고 표시
+        if (curCount != null)
+        {
+            int qty = GetCurrentQtyBySubject(SubjectInput.text /*, receivingMinusRelease:true */);
+            curCount.text = qty.ToString();
+        }
+
         SetDepartmentByReceivingTime(SubjectInput.text);
 
         // 3) 자동완성 리스트 닫기

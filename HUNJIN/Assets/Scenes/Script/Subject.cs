@@ -59,7 +59,11 @@ public class Subject : MonoBehaviour
 
                 SubjectDate.text = (s[0] ?? "").Trim().Replace("-", "/");
                 SubjectName.text = (s[1] ?? "").Trim();
-                Gugo.text = (s[7] ?? "").Trim();
+                string subjectName = (s[1] ?? "").Trim();
+                if (!GameManager.Instance.isAllCount)
+                    Gugo.text = (s[7] ?? "").Trim(); // 비고 그대로
+                else
+                    Gugo.text = GameManager.Instance.GetTotalQtyBySubject(subjectName).ToString(); // 전체 수량
 
                 int release = int.TryParse((s[3] ?? "0").Trim(), out var r1) ? r1 : 0;
                 int receiving = int.TryParse((s[2] ?? "0").Trim(), out var r2) ? r2 : 0;
@@ -92,7 +96,8 @@ public class Subject : MonoBehaviour
                 var s = GameManager.Instance.DoGetSearch(myId);
                 SubjectDate.text = (s[0] ?? "").Trim().Replace("-", "/");
                 SubjectName.text = (s[1] ?? "").Trim();
-                Gugo.text = (s[7] ?? "").Trim();
+                Gugo.text = (s[7] ?? "").Trim(); // 비고 그대로
+
                 // 필요시 배경색/아이콘 조정 로직 추가 가능
             }
         }
