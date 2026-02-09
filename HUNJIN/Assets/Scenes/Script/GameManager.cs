@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
     public bool isloading;
 
     // Google Apps Script (등록용)
-    string CodeURL = "https://script.google.com/macros/s/AKfycbw3D8WZBrlTQU6q003Vi7u7Mn91NM-4nUotIIuY1qI1iUD_gN1xdcSh3UjyCaSZnHO-2A/exec";
+    string CodeURL = "https://script.google.com/macros/s/AKfycbwuo07hZB3Kwp0bvg7yIypBnF9yUR0rLN2BbOOhhoBZCNNBIjQDI8nddz4iNmB7V29z/exec";
     public int CompanySearch;
     public int SeachIndex = 1;
     // 현재 검색 모드: true = 텍스트 검색, false = 요약(전체) 검색

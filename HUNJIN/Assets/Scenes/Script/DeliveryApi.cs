@@ -27,6 +27,7 @@ public class DeliveryApi
         yield return client.Post(form, onDone);
     }
 
+    // (구버전) 관리자 배차 - 안 쓰더라도 남겨둠
     public IEnumerator Assign(string deliveryId, string driverId, Action<ApiResponse> onDone)
     {
         var form = new Dictionary<string, string>
@@ -38,11 +39,34 @@ public class DeliveryApi
         yield return client.Post(form, onDone);
     }
 
+    // (구버전) 배차된건 수락 - 안 쓰더라도 남겨둠
     public IEnumerator Accept(string deliveryId, string driverId, Action<ApiResponse> onDone)
     {
         var form = new Dictionary<string, string>
         {
             ["order"] = "delivery_accept",
+            ["deliveryId"] = deliveryId,
+            ["driverId"] = driverId
+        };
+        yield return client.Post(form, onDone);
+    }
+
+    /// <summary>등록됨(CREATED) 공개 목록</summary>
+    public IEnumerator AvailableList(Action<ApiResponse> onDone)
+    {
+        var form = new Dictionary<string, string>
+        {
+            ["order"] = "delivery_available_list",
+        };
+        yield return client.Post(form, onDone);
+    }
+
+    /// <summary>선점(Claim): CREATED -> ACCEPTED + assignedDriverId</summary>
+    public IEnumerator Claim(string deliveryId, string driverId, Action<ApiResponse> onDone)
+    {
+        var form = new Dictionary<string, string>
+        {
+            ["order"] = "delivery_claim",
             ["deliveryId"] = deliveryId,
             ["driverId"] = driverId
         };

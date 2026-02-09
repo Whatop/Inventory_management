@@ -1,5 +1,4 @@
-using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,62 +9,124 @@ public class DeliveryListPanelController : MonoBehaviour
     [Header("Refs")]
     public AppFlow flow;
     public DeliveryService service;
+    public NaverMapLink naverMapLink;
 
-    [Header("Filter")]
-    public string statusFilter = ""; // ""=ALL
-    public Button allButton;
-    public Button createdButton;
-    public Button assignedButton;
-    public Button acceptedButton;
-    public Button pickedUpButton;
-    public Button deliveredButton;
-
-    [Header("Search (Optional)")]
-    public TMP_InputField searchInput;
+    [Header("Confirm UI")]
+    public ChoicePanelController choicePanel;
 
     [Header("List")]
     public Transform contentRoot;
     public GameObject deliveryItemPrefab;
     public Button refreshButton;
-    public Button openCreateButton;
 
-    [Header("Driver Select Popup")]
-    public GameObject driverSelectPopupRoot;
-    public Transform driverPopupContentRoot;
-    public GameObject driverItemPrefab;
-    public Button popupCloseButton;
+    // "" = ALL
+    private string statusFilter = "";
 
-    private string _pendingAssignDeliveryId = null;
+    // 탭 토글 동기화 중 콜백 루프 방지
+    private bool _tabSyncing;
 
     void Awake()
     {
         if (refreshButton) refreshButton.onClick.AddListener(Refresh);
-        if (openCreateButton) openCreateButton.onClick.AddListener(() => flow.ShowDeliveryCreate());
-
-        if (allButton) allButton.onClick.AddListener(() => SetFilter(""));
-        if (createdButton) createdButton.onClick.AddListener(() => SetFilter("CREATED"));
-        if (assignedButton) assignedButton.onClick.AddListener(() => SetFilter("ASSIGNED"));
-        if (acceptedButton) acceptedButton.onClick.AddListener(() => SetFilter("ACCEPTED"));
-        if (pickedUpButton) pickedUpButton.onClick.AddListener(() => SetFilter("PICKED_UP"));
-        if (deliveredButton) deliveredButton.onClick.AddListener(() => SetFilter("DELIVERED"));
-
-        if (popupCloseButton) popupCloseButton.onClick.AddListener(CloseDriverPopup);
-        if (driverSelectPopupRoot) driverSelectPopupRoot.SetActive(false);
     }
 
-    void OnEnable()
+    void OnEnable() => Refresh();
+
+    /// <summary>
+    /// FilterTabAction에서 호출됨.
+    /// code: ALL / CREATED / ACCEPTED / PICKED_UP / DELIVERED / CANCELED
+    /// isOn: 토글 켜짐/꺼짐
+    /// sourceToggle: 호출한 토글(본인)
+    /// </summary>
+    public void OnFilterTabChanged(string code, bool isOn, Toggle sourceToggle)
     {
+        if (_tabSyncing) return;
+
+        code = (code ?? "").Trim();
+        if (string.IsNullOrEmpty(code)) code = "ALL";
+
+        // OFF 이벤트는: "현재 선택된 탭을 끄는 행위"일 때만 의미가 있음
+        // (토글그룹 없이 구현할 수 있게 설계)
+        if (!isOn)
+        {
+            // 현재 필터가 이 탭이었다면 => ALL로 복귀시키기
+            bool wasThisSelected =
+                (code == "ALL" && string.IsNullOrEmpty(statusFilter)) ||
+                (code != "ALL" && statusFilter == code);
+
+            if (wasThisSelected)
+            {
+                SetFilterInternal("ALL", sourceToggle);
+                Refresh();
+            }
+            return;
+        }
+
+        // ON 이벤트
+        SetFilterInternal(code, sourceToggle);
         Refresh();
     }
 
-    void SetFilter(string filter)
+    private void SetFilterInternal(string code, Toggle sourceToggle)
     {
-        statusFilter = filter ?? "";
-        Refresh();
+        // code==ALL이면 statusFilter=""
+        statusFilter = (code == "ALL") ? "" : code;
+
+        // 같은 탭 그룹에 있는 다른 토글들 OFF 처리
+        // (FilterTabAction들이 같은 패널 아래에 붙어있다는 전제)
+        _tabSyncing = true;
+        try
+        {
+            var actions = GetComponentsInChildren<FilterTabAction>(true);
+            foreach (var a in actions)
+            {
+                if (a == null) continue;
+                var t = a.GetComponent<Toggle>();
+                if (!t) continue;
+
+                bool shouldBeOn =
+                    (code == "ALL" && (a.statusCode == "ALL" || a.statusCode == "전체")) ||
+                    (code != "ALL" && NormalizeStatusLikeFilterTabAction(a.statusCode) == code);
+
+                // sourceToggle은 이미 ON이므로, 나머지는 OFF
+                if (t == sourceToggle) continue;
+
+                // Toggle 이벤트 루프 방지: SetIsOnWithoutNotify 사용
+                t.SetIsOnWithoutNotify(shouldBeOn);
+            }
+
+            // sourceToggle도 혹시 다른 로직으로 꼬였으면 맞춰줌
+            if (sourceToggle) sourceToggle.SetIsOnWithoutNotify(true);
+        }
+        finally
+        {
+            _tabSyncing = false;
+        }
+    }
+
+    // FilterTabAction.NormalizeStatus와 같은 규칙으로 맞춰줌(컨트롤러 단에서도 안전하게)
+    private static string NormalizeStatusLikeFilterTabAction(string s)
+    {
+        s = (s ?? "").Trim();
+        if (string.IsNullOrEmpty(s)) return "ALL";
+
+        switch (s)
+        {
+            case "전체":
+            case "ALL": return "ALL";
+            case "등록됨": return "CREATED";
+            case "수락완료": return "ACCEPTED";
+            case "픽업완료": return "PICKED_UP";
+            case "배달완료": return "DELIVERED";
+            case "취소":
+            case "취소됨": return "CANCELED";
+            default: return s; // 이미 코드면 그대로
+        }
     }
 
     public void Refresh()
     {
+        if (!service) return;
         StartCoroutine(CoFetch());
     }
 
@@ -81,15 +142,6 @@ public class DeliveryListPanelController : MonoBehaviour
         }
 
         var rows = service.ParseDeliveryRows(resp.value);
-        if (searchInput && !string.IsNullOrWhiteSpace(searchInput.text))
-        {
-            string q = searchInput.text.Trim();
-            rows = rows.FindAll(x =>
-                (x.customerName ?? "").Contains(q) ||
-                (x.address ?? "").Contains(q) ||
-                (x.deliveryId ?? "").Contains(q));
-        }
-
         Render(rows);
     }
 
@@ -97,108 +149,68 @@ public class DeliveryListPanelController : MonoBehaviour
     {
         ClearChildren(contentRoot);
 
+        bool loggedIn = service && service.IsLoggedIn();
+
         foreach (var d in rows)
         {
             var go = Instantiate(deliveryItemPrefab, contentRoot);
 
-            SetTMP(go, "CustomerNameText", d.customerName);
-            SetTMP(go, "AddressText", d.address);
-            SetTMP(go, "StatusText", d.status);
-            SetTMP(go, "PointsText", d.points);
-
+            // AssignButton(=수락 버튼) 처리
             var assignBtn = FindButton(go, "AssignButton");
             if (assignBtn)
             {
-                assignBtn.onClick.RemoveAllListeners();
-                assignBtn.onClick.AddListener(() => OpenDriverPopup(d.deliveryId));
+                bool canAccept = loggedIn && d.status == "CREATED";
+
+                // "등록(CREATED) + 로그인"일 때만 활성
+                assignBtn.gameObject.SetActive(canAccept);
+
+                if (canAccept)
+                {
+                    var label = assignBtn.GetComponentInChildren<TMP_Text>();
+                    if (label) label.text = "수락";
+
+                    assignBtn.onClick.RemoveAllListeners();
+                    assignBtn.onClick.AddListener(() => RequestAcceptConfirm(d.deliveryId));
+                }
             }
         }
     }
 
-    // ---------- Driver popup ----------
-    void OpenDriverPopup(string deliveryId)
+    void RequestAcceptConfirm(string deliveryId)
     {
-        _pendingAssignDeliveryId = deliveryId;
-        if (driverSelectPopupRoot) driverSelectPopupRoot.SetActive(true);
-        StartCoroutine(CoFetchDrivers());
+        if (choicePanel)
+        {
+            choicePanel.Show(
+                "배차 수락하시겠습니까?",
+                onYes: () => StartCoroutine(CoClaimAndGoMy(deliveryId)),
+                onNo: null
+            );
+        }
+        else
+        {
+            StartCoroutine(CoClaimAndGoMy(deliveryId));
+        }
     }
 
-    void CloseDriverPopup()
-    {
-        _pendingAssignDeliveryId = null;
-        if (driverSelectPopupRoot) driverSelectPopupRoot.SetActive(false);
-        if (driverPopupContentRoot) ClearChildren(driverPopupContentRoot);
-    }
-
-    IEnumerator CoFetchDrivers()
+    IEnumerator CoClaimAndGoMy(string deliveryId)
     {
         ApiResponse resp = null;
-        yield return service.FetchDrivers(r => resp = r);
+        yield return service.Claim(deliveryId, service.currentDriverId, r => resp = r);
 
         if (resp == null || resp.result != "OK")
         {
-            Debug.LogWarning($"[DriverList] FAIL: {resp?.msg}");
+            Debug.LogWarning($"[Claim] FAIL: {resp?.msg}");
             yield break;
         }
 
-        var drivers = service.ParseDriverRows(resp.value);
-        RenderDrivers(drivers);
+        if (flow) flow.ShowDriverHome();
     }
 
-    void RenderDrivers(List<DriverDto> rows)
-    {
-        ClearChildren(driverPopupContentRoot);
-
-        foreach (var dr in rows)
-        {
-            var go = Instantiate(driverItemPrefab, driverPopupContentRoot);
-
-            SetTMP(go, "DriverNameText", dr.driverName);
-            SetTMP(go, "StatusText", dr.status);
-            SetTMP(go, "SeenText", dr.lastSeenAt);
-
-            var selectBtn = FindButton(go, "SelectButton");
-            if (selectBtn)
-            {
-                selectBtn.onClick.RemoveAllListeners();
-                selectBtn.onClick.AddListener(() => StartCoroutine(CoAssign(_pendingAssignDeliveryId, dr.driverId)));
-            }
-        }
-    }
-
-    IEnumerator CoAssign(string deliveryId, string driverId)
-    {
-        if (string.IsNullOrEmpty(deliveryId) || string.IsNullOrEmpty(driverId))
-            yield break;
-
-        ApiResponse resp = null;
-        yield return service.Assign(deliveryId, driverId, r => resp = r);
-
-        if (resp == null || resp.result != "OK")
-        {
-            Debug.LogWarning($"[Assign] FAIL: {resp?.msg}");
-            yield break;
-        }
-
-        CloseDriverPopup();
-        Refresh();
-    }
-
-    // ---------- Helpers ----------
     static void ClearChildren(Transform t)
     {
         if (!t) return;
         for (int i = t.childCount - 1; i >= 0; i--)
-            Destroy(t.GetChild(i).gameObject);
-    }
-
-    static void SetTMP(GameObject root, string childName, string text)
-    {
-        var tf = root.transform.Find(childName);
-        if (!tf) return;
-        var tmp = tf.GetComponent<TMP_Text>();
-        if (!tmp) return;
-        tmp.text = text ?? "";
+            Object.Destroy(t.GetChild(i).gameObject);
     }
 
     static Button FindButton(GameObject root, string childName)

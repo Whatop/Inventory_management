@@ -11,18 +11,22 @@ public class DriverHomePanelController : MonoBehaviour
     public DeliveryService service;
     public NaverMapLink naverMapLink;
 
+    [Header("Confirm UI")]
+    public ChoicePanelController choicePanel;
+
     [Header("Login")]
     public TMP_InputField driverIdInput;
     public TMP_InputField driverNameInput;
     public Button loginButton;
+    public Button logoutButton; // 로그인 상태일 때만 활성화
+
+    [Header("View Mode (Optional)")]
+    public Toggle availableToggle;
+    public Toggle myToggle;
 
     [Header("Driver Status")]
     public TMP_Dropdown statusDropdown; // IDLE/ON_DELIVERY/BREAK
     public Button refreshButton;
-
-    [Header("Points UI (Optional)")]
-    public TMP_Text todayPointsText;
-    public TMP_Text totalPointsText;
 
     [Header("List")]
     public Transform contentRoot;
@@ -33,30 +37,67 @@ public class DriverHomePanelController : MonoBehaviour
 
     Coroutine _heartbeatCo;
 
+    enum ViewMode { Available, My }
+    ViewMode mode = ViewMode.My;
+
     void Awake()
     {
         if (loginButton) loginButton.onClick.AddListener(() => StartCoroutine(CoLogin()));
+        if (logoutButton) logoutButton.onClick.AddListener(RequestLogout);
+
         if (refreshButton) refreshButton.onClick.AddListener(Refresh);
 
         if (statusDropdown)
-        {
             statusDropdown.onValueChanged.AddListener(_ => OnStatusChanged());
-        }
+
+        if (availableToggle)
+            availableToggle.onValueChanged.AddListener(isOn => { if (isOn) { mode = ViewMode.Available; Refresh(); } });
+
+        if (myToggle)
+            myToggle.onValueChanged.AddListener(isOn => { if (isOn) { mode = ViewMode.My; Refresh(); } });
+
+        RefreshLoginUI();
     }
 
     void OnEnable()
     {
-        // 로그인 되어 있으면 바로 목록 갱신
-        if (!string.IsNullOrEmpty(service.currentDriverId))
+        RefreshLoginUI();
+        // 자동로그인 세션이 있으면 UI 반영
+        if (service && service.IsLoggedIn())
         {
-            Refresh();
+            if (driverIdInput) driverIdInput.text = service.currentDriverId;
+            if (driverNameInput) driverNameInput.text = service.currentDriverName;
+
+            if (statusDropdown)
+                SetDropdownValueByText(statusDropdown, service.currentDriverStatus);
+
             StartHeartbeat();
+            Refresh();
         }
+
+        if (availableToggle && myToggle)
+        {
+            if (!availableToggle.isOn && !myToggle.isOn) myToggle.isOn = true;
+            mode = availableToggle.isOn ? ViewMode.Available : ViewMode.My;
+        }
+
+        RefreshLoginUI();
     }
 
     void OnDisable()
     {
         StopHeartbeat();
+    }
+
+    void RefreshLoginUI()
+    {
+        bool loggedIn = service && service.IsLoggedIn();
+
+        if (logoutButton) logoutButton.gameObject.SetActive(loggedIn);
+        if (loginButton) loginButton.gameObject.SetActive(!loggedIn);
+
+        if (driverIdInput) driverIdInput.interactable = !loggedIn;
+        if (driverNameInput) driverNameInput.interactable = !loggedIn;
     }
 
     IEnumerator CoLogin()
@@ -66,10 +107,12 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (string.IsNullOrEmpty(id))
         {
+            RefreshLoginUI();
             Debug.LogWarning("[Driver] driverId is empty");
             yield break;
         }
 
+        // 세션 저장(자동로그인)
         service.SetDriver(id, name);
 
         ApiResponse resp = null;
@@ -82,27 +125,75 @@ public class DriverHomePanelController : MonoBehaviour
         }
 
         OnStatusChanged();
-        Refresh();
         StartHeartbeat();
+        Refresh();
+        RefreshLoginUI();
+    }
+
+    void RequestLogout()
+    {
+        if (choicePanel)
+        {
+            choicePanel.Show(
+                "로그아웃 하시겠습니까?",
+                onYes: () => LogoutConfirmed(),
+                onNo: null
+            );
+        }
+        else
+        {
+            // 확인창 없으면 즉시 로그아웃
+            LogoutConfirmed();
+        }
+    }
+
+    void LogoutConfirmed()
+    {
+        StopHeartbeat();
+        if (service) service.LogoutDriver();
+
+        if (driverIdInput) driverIdInput.text = "";
+        if (driverNameInput) driverNameInput.text = "";
+        if (statusDropdown) SetDropdownValueByText(statusDropdown, "IDLE");
+
+        ClearChildren(contentRoot);
+        RefreshLoginUI();
     }
 
     void OnStatusChanged()
     {
-        if (!statusDropdown) return;
-
-        // Dropdown 옵션 텍스트: IDLE / ON_DELIVERY / BREAK 로 맞추는 걸 추천
+        if (!statusDropdown || !service) return;
         string status = statusDropdown.options[statusDropdown.value].text;
-        service.currentDriverStatus = status;
+        service.SetDriverStatus(status);
     }
 
     public void Refresh()
     {
-        if (string.IsNullOrEmpty(service.currentDriverId))
+        if (!service || !service.IsLoggedIn())
         {
             Debug.LogWarning("[Driver] Not logged in");
             return;
         }
-        StartCoroutine(CoFetchMyDeliveries());
+
+        if (mode == ViewMode.Available)
+            StartCoroutine(CoFetchAvailable());
+        else
+            StartCoroutine(CoFetchMyDeliveries());
+    }
+
+    IEnumerator CoFetchAvailable()
+    {
+        ApiResponse resp = null;
+        yield return service.FetchAvailableDeliveries(r => resp = r);
+
+        if (resp == null || resp.result != "OK")
+        {
+            Debug.LogWarning($"[AvailableDeliveries] FAIL: {resp?.msg}");
+            yield break;
+        }
+
+        var rows = service.ParseDeliveryRows(resp.value);
+        Render(rows, isAvailableList: true);
     }
 
     IEnumerator CoFetchMyDeliveries()
@@ -112,15 +203,15 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (resp == null || resp.result != "OK")
         {
-            Debug.LogWarning($"[DriverDeliveries] FAIL: {resp?.msg}");
+            Debug.LogWarning($"[MyDeliveries] FAIL: {resp?.msg}");
             yield break;
         }
 
         var rows = service.ParseDeliveryRows(resp.value);
-        Render(rows);
+        Render(rows, isAvailableList: false);
     }
 
-    void Render(List<DeliveryDto> rows)
+    void Render(List<DeliveryDto> rows, bool isAvailableList)
     {
         ClearChildren(contentRoot);
 
@@ -128,76 +219,55 @@ public class DriverHomePanelController : MonoBehaviour
         {
             var go = Instantiate(driverDeliveryItemPrefab, contentRoot);
 
-            SetTMP(go, "CustomerNameText", d.customerName);
-            SetTMP(go, "AddressText", d.address);
-            SetTMP(go, "StatusText", d.status);
-            SetTMP(go, "PointsText", d.points);
+            // ... (여기 Render는 네 기존 버전 그대로 두고)
+            // “배차 수락(Claim)” 호출부만 아래처럼 Confirm로 감싸면 됨.
 
-            var acceptBtn = FindButton(go, "AcceptButton");
-            var pickupBtn = FindButton(go, "PickupButton");
-            var deliverBtn = FindButton(go, "DeliverButton");
-            var routeBtn = FindButton(go, "RouteButton");
+            var claimBtn = FindButton(go, "ClaimButton");
+            if (claimBtn)
+            {
+                claimBtn.gameObject.SetActive(isAvailableList);
+                claimBtn.onClick.RemoveAllListeners();
 
-            // 상태별 버튼 노출
-            SetActive(acceptBtn, d.status == "ASSIGNED");
-            SetActive(pickupBtn, d.status == "ACCEPTED");
-            SetActive(deliverBtn, d.status == "PICKED_UP");
-            SetActive(routeBtn, d.status == "PICKED_UP" || d.status == "ACCEPTED" || d.status == "ASSIGNED");
-
-            if (acceptBtn)
-            {
-                acceptBtn.onClick.RemoveAllListeners();
-                acceptBtn.onClick.AddListener(() => StartCoroutine(CoAccept(d.deliveryId)));
-            }
-            if (pickupBtn)
-            {
-                pickupBtn.onClick.RemoveAllListeners();
-                pickupBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "PICKED_UP")));
-            }
-            if (deliverBtn)
-            {
-                deliverBtn.onClick.RemoveAllListeners();
-                deliverBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "DELIVERED")));
-            }
-            if (routeBtn)
-            {
-                routeBtn.onClick.RemoveAllListeners();
-                routeBtn.onClick.AddListener(() =>
+                claimBtn.onClick.AddListener(() =>
                 {
-                    if (!naverMapLink) return;
-                    naverMapLink.OpenRoute(d.lat, d.lng, d.address, d.customerName);
+                    RequestClaimConfirm(d.deliveryId);
                 });
             }
         }
     }
 
-    IEnumerator CoAccept(string deliveryId)
+    void RequestClaimConfirm(string deliveryId)
+    {
+        if (choicePanel)
+        {
+            choicePanel.Show(
+                "배차 수락하시겠습니까?",
+                onYes: () => StartCoroutine(CoClaim(deliveryId)),
+                onNo: null
+            );
+        }
+        else
+        {
+            StartCoroutine(CoClaim(deliveryId));
+        }
+    }
+
+    IEnumerator CoClaim(string deliveryId)
     {
         ApiResponse resp = null;
-        yield return service.Accept(deliveryId, service.currentDriverId, r => resp = r);
+        yield return service.Claim(deliveryId, service.currentDriverId, r => resp = r);
 
         if (resp == null || resp.result != "OK")
         {
-            Debug.LogWarning($"[Accept] FAIL: {resp?.msg}");
+            Debug.LogWarning($"[Claim] FAIL: {resp?.msg}");
             yield break;
         }
+
+        if (myToggle) myToggle.isOn = true;
+        mode = ViewMode.My;
         Refresh();
     }
 
-    IEnumerator CoUpdate(string deliveryId, string status)
-    {
-        ApiResponse resp = null;
-        yield return service.UpdateStatus(deliveryId, service.currentDriverId, status, r => resp = r);
-
-        if (resp == null || resp.result != "OK")
-        {
-            Debug.LogWarning($"[UpdateStatus:{status}] FAIL: {resp?.msg}");
-            yield break;
-        }
-        Refresh();
-    }
-
-    // ---------- Heartbeat ----------
     void StartHeartbeat()
     {
         if (_heartbeatCo != null) StopCoroutine(_heartbeatCo);
@@ -217,39 +287,24 @@ public class DriverHomePanelController : MonoBehaviour
     {
         while (true)
         {
-            // MVP: 위치는 비워도 됨. 나중에 GPS 붙이면 lat/lng 넣기
-            string lat = "";
-            string lng = "";
-
             ApiResponse resp = null;
             yield return service.Heartbeat(
                 service.currentDriverId,
                 service.currentDriverName,
                 service.currentDriverStatus,
-                lat, lng,
+                "", "",
                 r => resp = r
             );
 
-            // 실패해도 끊지 않고 다음 루프
             yield return new WaitForSeconds(heartbeatIntervalSec);
         }
     }
 
-    // ---------- Helpers ----------
     static void ClearChildren(Transform t)
     {
         if (!t) return;
         for (int i = t.childCount - 1; i >= 0; i--)
             Destroy(t.GetChild(i).gameObject);
-    }
-
-    static void SetTMP(GameObject root, string childName, string text)
-    {
-        var tf = root.transform.Find(childName);
-        if (!tf) return;
-        var tmp = tf.GetComponent<TMP_Text>();
-        if (!tmp) return;
-        tmp.text = text ?? "";
     }
 
     static Button FindButton(GameObject root, string childName)
@@ -258,9 +313,17 @@ public class DriverHomePanelController : MonoBehaviour
         return tf ? tf.GetComponent<Button>() : null;
     }
 
-    static void SetActive(Button btn, bool active)
+    static void SetDropdownValueByText(TMP_Dropdown dd, string text)
     {
-        if (!btn) return;
-        btn.gameObject.SetActive(active);
+        if (!dd) return;
+        text = (text ?? "").Trim();
+        for (int i = 0; i < dd.options.Count; i++)
+        {
+            if ((dd.options[i].text ?? "").Trim() == text)
+            {
+                dd.SetValueWithoutNotify(i);
+                return;
+            }
+        }
     }
 }
