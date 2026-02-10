@@ -5,60 +5,61 @@ using UnityEngine.UI;
 
 public class ChoicePanelController : MonoBehaviour
 {
+    [Header("Root")]
+    public GameObject root;
+
     [Header("UI")]
-    public GameObject root;          // ChoicePanel (없으면 this.gameObject 사용)
-    public TMP_Text messageText;     // BG/Text(TMP)
-    public Button yesButton;         // Yes
-    public Button noButton;          // NO
+    public TMP_Text titleText;   // 없으면 비워도 됨
+    public TMP_Text messageText;
+    public Button yesButton;
+    public Button noButton;
 
-    [Header("Labels (Optional)")]
-    public TMP_Text yesLabel;        // Yes/Text(TMP)
-    public TMP_Text noLabel;         // NO/Text(TMP)
-
-    Action _onYes;
-    Action _onNo;
+    private Action _onYes;
+    private Action _onNo;
 
     void Awake()
     {
-        if (!root) root = gameObject;
-
-        if (yesButton) yesButton.onClick.AddListener(ClickYes);
-        if (noButton) noButton.onClick.AddListener(ClickNo);
-
-        HideImmediate();
+        if (yesButton) yesButton.onClick.AddListener(OnYes);
+        if (noButton) noButton.onClick.AddListener(OnNo);
+        Hide();
     }
 
-    public void Show(string message, Action onYes, Action onNo = null, string yesText = "예", string noText = "아니오")
+    public void Open(string title, string message, Action onYes, Action onNo)
     {
+        if (titleText) titleText.text = title ?? "";
+        if (messageText) messageText.text = message ?? "";
         _onYes = onYes;
         _onNo = onNo;
 
-        if (messageText) messageText.text = message ?? "";
-
-        if (yesLabel) yesLabel.text = yesText ?? "예";
-        if (noLabel) noLabel.text = noText ?? "아니오";
-
-        root.SetActive(true);
+        if (root) root.SetActive(true);
+        else gameObject.SetActive(true);
     }
 
-    public void HideImmediate()
+    public void Show(string message)
     {
+        Open("", message, null, null);
+    }
+
+    public void Hide()
+    {
+        if (root) root.SetActive(false);
+        else gameObject.SetActive(false);
+
         _onYes = null;
         _onNo = null;
-        if (root) root.SetActive(false);
     }
 
-    void ClickYes()
+    private void OnYes()
     {
         var cb = _onYes;
-        HideImmediate();
+        Hide();
         cb?.Invoke();
     }
 
-    void ClickNo()
+    private void OnNo()
     {
         var cb = _onNo;
-        HideImmediate();
+        Hide();
         cb?.Invoke();
     }
 }

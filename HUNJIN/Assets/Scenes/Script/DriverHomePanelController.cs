@@ -1,5 +1,6 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,14 +19,22 @@ public class DriverHomePanelController : MonoBehaviour
     public TMP_InputField driverIdInput;
     public TMP_InputField driverNameInput;
     public Button loginButton;
-    public Button logoutButton; // ·Î±×ÀÎ »óÅÂÀÏ ¶§¸¸ È°¼ºÈ­
+    public Button logoutButton;
+
+    [Header("Login-Only UI")]
+    public GameObject myPointsPanelRoot;
+    public GameObject myDeliveriesRoot;
+
+    [Header("Points Text (Optional)")]
+    public TMP_Text todayPointsText;
+    public TMP_Text totalPointsText;
 
     [Header("View Mode (Optional)")]
     public Toggle availableToggle;
     public Toggle myToggle;
 
     [Header("Driver Status")]
-    public TMP_Dropdown statusDropdown; // IDLE/ON_DELIVERY/BREAK
+    public TMP_Dropdown statusDropdown;
     public Button refreshButton;
 
     [Header("List")]
@@ -62,7 +71,7 @@ public class DriverHomePanelController : MonoBehaviour
     void OnEnable()
     {
         RefreshLoginUI();
-        // ÀÚµ¿·Î±×ÀÎ ¼¼¼ÇÀÌ ÀÖÀ¸¸é UI ¹İ¿µ
+
         if (service && service.IsLoggedIn())
         {
             if (driverIdInput) driverIdInput.text = service.currentDriverId;
@@ -98,6 +107,9 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (driverIdInput) driverIdInput.interactable = !loggedIn;
         if (driverNameInput) driverNameInput.interactable = !loggedIn;
+
+        if (myPointsPanelRoot) myPointsPanelRoot.SetActive(loggedIn);
+        if (myDeliveriesRoot) myDeliveriesRoot.SetActive(loggedIn);
     }
 
     IEnumerator CoLogin()
@@ -107,12 +119,10 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (string.IsNullOrEmpty(id))
         {
-            RefreshLoginUI();
             Debug.LogWarning("[Driver] driverId is empty");
             yield break;
         }
 
-        // ¼¼¼Ç ÀúÀå(ÀÚµ¿·Î±×ÀÎ)
         service.SetDriver(id, name);
 
         ApiResponse resp = null;
@@ -134,17 +144,14 @@ public class DriverHomePanelController : MonoBehaviour
     {
         if (choicePanel)
         {
-            choicePanel.Show(
-                "·Î±×¾Æ¿ô ÇÏ½Ã°Ú½À´Ï±î?",
+            choicePanel.Open(
+                "ë¡œê·¸ ì•„ì›ƒ",
+                "ë¡œê·¸ì•„ì›ƒ í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
                 onYes: () => LogoutConfirmed(),
                 onNo: null
             );
         }
-        else
-        {
-            // È®ÀÎÃ¢ ¾øÀ¸¸é Áï½Ã ·Î±×¾Æ¿ô
-            LogoutConfirmed();
-        }
+        else LogoutConfirmed();
     }
 
     void LogoutConfirmed()
@@ -157,6 +164,7 @@ public class DriverHomePanelController : MonoBehaviour
         if (statusDropdown) SetDropdownValueByText(statusDropdown, "IDLE");
 
         ClearChildren(contentRoot);
+        SetPointsText(null);
         RefreshLoginUI();
     }
 
@@ -171,14 +179,36 @@ public class DriverHomePanelController : MonoBehaviour
     {
         if (!service || !service.IsLoggedIn())
         {
-            Debug.LogWarning("[Driver] Not logged in");
+            RefreshLoginUI();
             return;
         }
+
+        RefreshLoginUI();
+        StartCoroutine(CoRefreshPoints());
 
         if (mode == ViewMode.Available)
             StartCoroutine(CoFetchAvailable());
         else
             StartCoroutine(CoFetchMyDeliveries());
+    }
+
+    IEnumerator CoRefreshPoints()
+    {
+        ApiResponse resp = null;
+        yield return service.FetchDrivers(r => resp = r);
+        if (resp == null || resp.result != "OK") yield break;
+
+        var list = service.ParseDriverRows(resp.value);
+        var me = list.FirstOrDefault(x => (x.driverId ?? "") == service.currentDriverId);
+        SetPointsText(me);
+    }
+
+    void SetPointsText(DriverDto me)
+    {
+        string today = me != null ? me.todayPoints : "";
+        string total = me != null ? me.totalPoints : "";
+        if (todayPointsText) todayPointsText.text = string.IsNullOrEmpty(today) ? "0" : today;
+        if (totalPointsText) totalPointsText.text = string.IsNullOrEmpty(total) ? "0" : total;
     }
 
     IEnumerator CoFetchAvailable()
@@ -208,7 +238,35 @@ public class DriverHomePanelController : MonoBehaviour
         }
 
         var rows = service.ParseDeliveryRows(resp.value);
+
+        // ë‚´ ë°°ë‹¬ ì•ˆì „ í•„í„°
+        string myId = (service.currentDriverId ?? "").Trim();
+        string myName = (service.currentDriverName ?? "").Trim();
+
+        rows = rows.Where(d =>
+        {
+            string assignedId = (d.assignedDriverId ?? "").Trim();
+            string acceptedName = (d.acceptedDriverName ?? "").Trim();
+            bool byId = !string.IsNullOrEmpty(myId) && assignedId == myId;
+            bool byName = !string.IsNullOrEmpty(myName) && acceptedName == myName;
+            return byId || byName;
+        }).ToList();
+
         Render(rows, isAvailableList: false);
+    }
+
+    static string ToKoreanDeliveryStatus(string status)
+    {
+        switch ((status ?? "").Trim())
+        {
+            case "CREATED": return "ë“±ë¡ë¨";
+            case "ASSIGNED": return "ë°°ì°¨ë¨";
+            case "ACCEPTED": return "ìˆ˜ë½ì™„ë£Œ";
+            case "PICKED_UP": return "í”½ì—…ì™„ë£Œ";
+            case "DELIVERED": return "ë°°ë‹¬ì™„ë£Œ";
+            case "CANCELED": return "ì·¨ì†Œë¨";
+            default: return status ?? "";
+        }
     }
 
     void Render(List<DeliveryDto> rows, bool isAvailableList)
@@ -219,19 +277,84 @@ public class DriverHomePanelController : MonoBehaviour
         {
             var go = Instantiate(driverDeliveryItemPrefab, contentRoot);
 
-            // ... (¿©±â Render´Â ³× ±âÁ¸ ¹öÀü ±×´ë·Î µÎ°í)
-            // ¡°¹èÂ÷ ¼ö¶ô(Claim)¡± È£ÃâºÎ¸¸ ¾Æ·¡Ã³·³ Confirm·Î °¨½Î¸é µÊ.
+            SetTMP(go, "CustomerNameText", d.customerName);
+            SetTMP(go, "AddressText", d.address);
+            SetTMP(go, "StatusText", ToKoreanDeliveryStatus(d.status));
+            SetTMP(go, "PointsText", d.points);
 
-            var claimBtn = FindButton(go, "ClaimButton");
-            if (claimBtn)
+            // âœ… ë²„íŠ¼ ë”¥ íƒìƒ‰ (ê²½ë¡œ ë¬¸ì œ í•´ê²°)
+            var acceptBtn = FindButtonAnyDeep(go.transform, "AcceptButton");
+            var pickupBtn = FindButtonAnyDeep(go.transform, "PickupButton");
+            var deliverBtn = FindButtonAnyDeep(go.transform, "DeliverButton", "DeliveredButton", "DeliveredtButton");
+            var routeBtn = FindButtonAnyDeep(go.transform, "RouteButton");
+            var addressBtn = FindButtonAnyDeep(go.transform, "AddressButton");
+            var cancelBtn = FindButtonAnyDeep(go.transform, "CancelButton");
+
+            // ë“±ë¡ ë°°ë‹¬(available)ì—ì„œë§Œ ìˆ˜ë½ ë…¸ì¶œ
+            if (acceptBtn)
             {
-                claimBtn.gameObject.SetActive(isAvailableList);
-                claimBtn.onClick.RemoveAllListeners();
-
-                claimBtn.onClick.AddListener(() =>
+                bool canAccept = isAvailableList && (d.status ?? "").Trim() == "CREATED";
+                acceptBtn.gameObject.SetActive(canAccept);
+                acceptBtn.onClick.RemoveAllListeners();
+                if (canAccept)
                 {
-                    RequestClaimConfirm(d.deliveryId);
+                    SetButtonLabel(acceptBtn, "ìˆ˜ë½");
+                    acceptBtn.onClick.AddListener(() => RequestClaimConfirm(d.deliveryId));
+                }
+            }
+
+            bool isMyList = !isAvailableList;
+            string st = (d.status ?? "").Trim();
+
+            SetActive(pickupBtn, isMyList && st == "ACCEPTED");
+            SetActive(deliverBtn, isMyList && st == "PICKED_UP");
+
+            // ë‚´ ë°°ë‹¬: ACCEPTED / PICKED_UP ì—ì„œ ê¸¸ì•ˆë‚´/ì£¼ì†Œë³µì‚¬/ì·¨ì†Œ í™œì„±
+            SetActive(routeBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
+            SetActive(addressBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
+            SetActive(cancelBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
+
+            if (pickupBtn)
+            {
+                pickupBtn.onClick.RemoveAllListeners();
+                pickupBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "PICKED_UP")));
+                SetButtonLabel(pickupBtn, "í”½ì—…ì™„ë£Œ");
+            }
+
+            if (deliverBtn)
+            {
+                deliverBtn.onClick.RemoveAllListeners();
+                deliverBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "DELIVERED")));
+                SetButtonLabel(deliverBtn, "ë°°ë‹¬ì™„ë£Œ");
+            }
+
+            if (routeBtn)
+            {
+                routeBtn.onClick.RemoveAllListeners();
+                routeBtn.onClick.AddListener(() =>
+                {
+                    if (!naverMapLink) return;
+                    naverMapLink.OpenRoute(d.lat, d.lng, d.address, d.customerName);
                 });
+                SetButtonLabel(routeBtn, "ê²½ë¡œ ë²„íŠ¼");
+            }
+
+            if (addressBtn)
+            {
+                addressBtn.onClick.RemoveAllListeners();
+                addressBtn.onClick.AddListener(() =>
+                {
+                    GUIUtility.systemCopyBuffer = d.address ?? "";
+                    Debug.Log($"[Address Copied] {GUIUtility.systemCopyBuffer}");
+                });
+                SetButtonLabel(addressBtn, "ì£¼ì†Œ ë³µì‚¬");
+            }
+
+            if (cancelBtn)
+            {
+                cancelBtn.onClick.RemoveAllListeners();
+                cancelBtn.onClick.AddListener(() => RequestCancelConfirm(d.deliveryId));
+                SetButtonLabel(cancelBtn, "ë°°ë‹¬ ì·¨ì†Œ");
             }
         }
     }
@@ -240,16 +363,28 @@ public class DriverHomePanelController : MonoBehaviour
     {
         if (choicePanel)
         {
-            choicePanel.Show(
-                "¹èÂ÷ ¼ö¶ôÇÏ½Ã°Ú½À´Ï±î?",
+            choicePanel.Open(
+                "ë°°ì°¨ ìˆ˜ë½",
+                "ë°°ì°¨ë¥¼ ìˆ˜ë½í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
                 onYes: () => StartCoroutine(CoClaim(deliveryId)),
                 onNo: null
             );
         }
-        else
+        else StartCoroutine(CoClaim(deliveryId));
+    }
+
+    void RequestCancelConfirm(string deliveryId)
+    {
+        if (choicePanel)
         {
-            StartCoroutine(CoClaim(deliveryId));
+            choicePanel.Open(
+                "ë°°ë‹¬ ì·¨ì†Œ",
+                "ì´ ë°°ë‹¬ì„ ì·¨ì†Œí•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
+                onYes: () => StartCoroutine(CoUpdate(deliveryId, "CANCELED")),
+                onNo: null
+            );
         }
+        else StartCoroutine(CoUpdate(deliveryId, "CANCELED"));
     }
 
     IEnumerator CoClaim(string deliveryId)
@@ -265,6 +400,20 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (myToggle) myToggle.isOn = true;
         mode = ViewMode.My;
+        Refresh();
+    }
+
+    IEnumerator CoUpdate(string deliveryId, string status)
+    {
+        ApiResponse resp = null;
+        yield return service.UpdateStatus(deliveryId, service.currentDriverId, status, r => resp = r);
+
+        if (resp == null || resp.result != "OK")
+        {
+            Debug.LogWarning($"[UpdateStatus:{status}] FAIL: {resp?.msg}");
+            yield break;
+        }
+
         Refresh();
     }
 
@@ -295,10 +444,13 @@ public class DriverHomePanelController : MonoBehaviour
                 "", "",
                 r => resp = r
             );
-
             yield return new WaitForSeconds(heartbeatIntervalSec);
         }
     }
+
+    // -----------------------
+    // Helpers
+    // -----------------------
 
     static void ClearChildren(Transform t)
     {
@@ -307,10 +459,30 @@ public class DriverHomePanelController : MonoBehaviour
             Destroy(t.GetChild(i).gameObject);
     }
 
-    static Button FindButton(GameObject root, string childName)
+    static void SetActive(Button btn, bool active)
     {
+        if (!btn) return;
+        btn.gameObject.SetActive(active);
+    }
+
+    static void SetTMP(GameObject root, string childName, string text)
+    {
+        // âœ… ì´ê±´ ê¸°ì¡´ëŒ€ë¡œ(ì§ê³„) ë‘ë˜, í•„ìš”í•˜ë©´ ì—¬ê¸°ë„ ë”¥íƒìƒ‰ìœ¼ë¡œ ë°”ê¿”ë„ ë¨
         var tf = root.transform.Find(childName);
-        return tf ? tf.GetComponent<Button>() : null;
+        if (!tf) return;
+
+        TMP_Text tmp = tf.GetComponent<TMP_Text>();
+        if (!tmp) tmp = tf.GetComponentInChildren<TMP_Text>(true);
+
+        if (!tmp) return;
+        tmp.text = text ?? "";
+    }
+
+    static void SetButtonLabel(Button btn, string label)
+    {
+        if (!btn) return;
+        var tmp = btn.GetComponentInChildren<TMP_Text>(true);
+        if (tmp) tmp.text = label ?? "";
     }
 
     static void SetDropdownValueByText(TMP_Dropdown dd, string text)
@@ -325,5 +497,28 @@ public class DriverHomePanelController : MonoBehaviour
                 return;
             }
         }
+    }
+
+    // âœ… í•µì‹¬: ë²„íŠ¼ ì´ë¦„ìœ¼ë¡œ "ìì‹ ì „ì²´"ì—ì„œ ì°¾ê¸° (inactive í¬í•¨)
+    static Button FindButtonAnyDeep(Transform root, params string[] names)
+    {
+        if (!root || names == null || names.Length == 0) return null;
+
+        var all = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < names.Length; i++)
+        {
+            string target = names[i];
+            if (string.IsNullOrEmpty(target)) continue;
+
+            for (int j = 0; j < all.Length; j++)
+            {
+                if (all[j].name == target)
+                {
+                    var btn = all[j].GetComponent<Button>();
+                    if (btn) return btn;
+                }
+            }
+        }
+        return null;
     }
 }

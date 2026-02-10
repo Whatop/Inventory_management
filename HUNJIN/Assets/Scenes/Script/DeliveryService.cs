@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +16,6 @@ public class DeliveryService : MonoBehaviour
     public string currentDriverName;
     public string currentDriverStatus = "IDLE";
 
-    // PlayerPrefs keys (auto-login)
     const string PREF_DRIVER_ID = "driver.session.id";
     const string PREF_DRIVER_NAME = "driver.session.name";
     const string PREF_DRIVER_STATUS = "driver.session.status";
@@ -24,7 +23,7 @@ public class DeliveryService : MonoBehaviour
     void Awake()
     {
         EnsureInitialized();
-        LoadDriverSession(); // <-- ¿⁄µø ∑Œ±◊¿Œ
+        LoadDriverSession();
     }
 
     void OnEnable()
@@ -40,7 +39,7 @@ public class DeliveryService : MonoBehaviour
 
         if (!client)
         {
-            Debug.LogError("[DeliveryService] SheetApiClient∞° æ¯Ω¿¥œ¥Ÿ. AppRootø° SheetApiClient∞° »∞º∫»≠µ«æÓ ¿÷¥¬¡ˆ »Æ¿Œ«œººø‰.");
+            Debug.LogError("[DeliveryService] SheetApiClientÍ∞Ä ÏóÜÏäµÎãàÎã§. AppRootÏóê SheetApiClientÍ∞Ä ÌôúÏÑ±ÌôîÎêòÏñ¥ ÏûàÎäîÏßÄ ÌôïÏù∏ÌïòÏÑ∏Ïöî.");
             return;
         }
 
@@ -54,12 +53,12 @@ public class DeliveryService : MonoBehaviour
 
         if (DeliveryApi == null || DriverApi == null)
         {
-            Debug.LogError($"[DeliveryService] API √ ±‚»≠ Ω«∆–: {context}");
+            Debug.LogError($"[DeliveryService] API Ï¥àÍ∏∞Ìôî Ïã§Ìå®: {context}");
             onDone?.Invoke(new ApiResponse
             {
                 order = context,
                 result = "FAIL",
-                msg = "API √ ±‚»≠ Ω«∆–(DeliveryApi/DriverApi null)"
+                msg = "API Ï¥àÍ∏∞Ìôî Ïã§Ìå®(DeliveryApi/DriverApi null)"
             });
             return false;
         }
@@ -148,7 +147,8 @@ public class DeliveryService : MonoBehaviour
     public IEnumerator Claim(string deliveryId, string driverId, Action<ApiResponse> onDone)
     {
         if (!IsReady(onDone, "delivery_claim")) yield break;
-        yield return DeliveryApi.Claim(deliveryId, driverId, onDone);
+        // ‚úÖ Claim ÏöîÏ≤≠Ïóê Í∏∞ÏÇ¨ Ïù¥Î¶ÑÎèÑ Í∞ôÏù¥ Î≥¥ÎÉÑ -> ÏãúÌä∏ PÏó¥Ïóê Ï†ÄÏû•
+        yield return DeliveryApi.Claim(deliveryId, driverId, currentDriverName, onDone);
     }
 
     public IEnumerator FetchAvailableDeliveries(Action<ApiResponse> onDone)
