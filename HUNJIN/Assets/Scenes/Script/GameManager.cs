@@ -150,8 +150,8 @@ public class GameManager : MonoBehaviour
         subfirst = true;
         isSubject = false;
 
-        DateInput.text = DateTime.Now.ToString("yy-MM-dd");
-        TimeInput.text = DateTime.Now.ToString("HH:mm");
+        //DateInput.text = DateTime.Now.ToString("yy-MM-dd");
+        //TimeInput.text = DateTime.Now.ToString("HH:mm");
 
         if (AllSubjectCountText != null && AllSubjectCountText.Length > 0)
             AllSubjectCountText[curScene].text = "[0/0]";

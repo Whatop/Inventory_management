@@ -15,14 +15,23 @@ public class DriverHomePanelController : MonoBehaviour
     [Header("Confirm UI")]
     public ChoicePanelController choicePanel;
 
+    [Header("Loading (GameManager 방식)")]
+    public GameObject loadingRoot;
+    [Tooltip("로딩이 최소로 떠있어야 하는 시간(초)")]
+    public float loadingMinDuration = 0.25f;
+    [Tooltip("너무 오래 걸릴 때 안전장치(초). 0이면 미사용")]
+    public float loadingMaxTimeout = 0f;
+
     [Header("Login")]
     public TMP_InputField driverIdInput;
     public TMP_InputField driverNameInput;
     public Button loginButton;
     public Button logoutButton;
 
-    [Header("Login-Only UI")]
+    [Header("Login-Only UI (필요한 것만 연결)")]
+    [Tooltip("내 포인트 패널 루트(로그인 시에만 보이게)")]
     public GameObject myPointsPanelRoot;
+    [Tooltip("내 배달목록 루트(GameObject0 같은 루트, 로그인 시에만 보이게)")]
     public GameObject myDeliveriesRoot;
 
     [Header("Points Text (Optional)")]
@@ -34,7 +43,7 @@ public class DriverHomePanelController : MonoBehaviour
     public Toggle myToggle;
 
     [Header("Driver Status")]
-    public TMP_Dropdown statusDropdown;
+    public TMP_Dropdown statusDropdown; // IDLE/ON_DELIVERY/BREAK
     public Button refreshButton;
 
     [Header("List")]
@@ -49,9 +58,14 @@ public class DriverHomePanelController : MonoBehaviour
     enum ViewMode { Available, My }
     ViewMode mode = ViewMode.My;
 
+    // loading state
+    int _loadingRef = 0;
+    float _loadingShownAt = -1f;
+    Coroutine _loadingTimeoutCo;
+
     void Awake()
     {
-        if (loginButton) loginButton.onClick.AddListener(() => StartCoroutine(CoLogin()));
+        if (loginButton) loginButton.onClick.AddListener(() => StartCoroutine(CoWrapLoading(CoLogin())));
         if (logoutButton) logoutButton.onClick.AddListener(RequestLogout);
 
         if (refreshButton) refreshButton.onClick.AddListener(Refresh);
@@ -66,6 +80,7 @@ public class DriverHomePanelController : MonoBehaviour
             myToggle.onValueChanged.AddListener(isOn => { if (isOn) { mode = ViewMode.My; Refresh(); } });
 
         RefreshLoginUI();
+        SetLoading(false, force: true);
     }
 
     void OnEnable()
@@ -96,6 +111,7 @@ public class DriverHomePanelController : MonoBehaviour
     void OnDisable()
     {
         StopHeartbeat();
+        SetLoading(false, force: true);
     }
 
     void RefreshLoginUI()
@@ -119,6 +135,7 @@ public class DriverHomePanelController : MonoBehaviour
 
         if (string.IsNullOrEmpty(id))
         {
+            RefreshLoginUI();
             Debug.LogWarning("[Driver] driverId is empty");
             yield break;
         }
@@ -145,13 +162,16 @@ public class DriverHomePanelController : MonoBehaviour
         if (choicePanel)
         {
             choicePanel.Open(
-                "로그 아웃",
-                "로그아웃 하시겠습니까?",
+                 "로그 아웃",
+                 "로그아웃 하시겠습니까?",
                 onYes: () => LogoutConfirmed(),
                 onNo: null
             );
         }
-        else LogoutConfirmed();
+        else
+        {
+            LogoutConfirmed();
+        }
     }
 
     void LogoutConfirmed()
@@ -179,34 +199,49 @@ public class DriverHomePanelController : MonoBehaviour
     {
         if (!service || !service.IsLoggedIn())
         {
+            Debug.LogWarning("[Driver] Not logged in");
             RefreshLoginUI();
             return;
         }
 
         RefreshLoginUI();
-        StartCoroutine(CoRefreshPoints());
+
+        // 포인트/목록 동시 호출 → 로딩 2개 겹쳐도 refcount로 안전
+        StartCoroutine(CoWrapLoading(CoRefreshPoints()));
 
         if (mode == ViewMode.Available)
-            StartCoroutine(CoFetchAvailable());
+            StartCoroutine(CoWrapLoading(CoFetchAvailable()));
         else
-            StartCoroutine(CoFetchMyDeliveries());
+            StartCoroutine(CoWrapLoading(CoFetchMyDeliveries()));
     }
 
     IEnumerator CoRefreshPoints()
     {
         ApiResponse resp = null;
         yield return service.FetchDrivers(r => resp = r);
-        if (resp == null || resp.result != "OK") yield break;
+
+        if (resp == null || resp.result != "OK")
+            yield break;
 
         var list = service.ParseDriverRows(resp.value);
         var me = list.FirstOrDefault(x => (x.driverId ?? "") == service.currentDriverId);
+
         SetPointsText(me);
     }
 
     void SetPointsText(DriverDto me)
     {
-        string today = me != null ? me.todayPoints : "";
-        string total = me != null ? me.totalPoints : "";
+        if (!todayPointsText && !totalPointsText) return;
+
+        string today = "";
+        string total = "";
+
+        if (me != null)
+        {
+            today = me.todayPoints;
+            total = me.totalPoints;
+        }
+
         if (todayPointsText) todayPointsText.text = string.IsNullOrEmpty(today) ? "0" : today;
         if (totalPointsText) totalPointsText.text = string.IsNullOrEmpty(total) ? "0" : total;
     }
@@ -239,7 +274,7 @@ public class DriverHomePanelController : MonoBehaviour
 
         var rows = service.ParseDeliveryRows(resp.value);
 
-        // 내 배달 안전 필터
+        // ✅ 안전 필터: "기사ID 또는 기사이름"으로 내 배달만 남김
         string myId = (service.currentDriverId ?? "").Trim();
         string myName = (service.currentDriverName ?? "").Trim();
 
@@ -247,6 +282,7 @@ public class DriverHomePanelController : MonoBehaviour
         {
             string assignedId = (d.assignedDriverId ?? "").Trim();
             string acceptedName = (d.acceptedDriverName ?? "").Trim();
+
             bool byId = !string.IsNullOrEmpty(myId) && assignedId == myId;
             bool byName = !string.IsNullOrEmpty(myName) && acceptedName == myName;
             return byId || byName;
@@ -281,50 +317,47 @@ public class DriverHomePanelController : MonoBehaviour
             SetTMP(go, "AddressText", d.address);
             SetTMP(go, "StatusText", ToKoreanDeliveryStatus(d.status));
             SetTMP(go, "PointsText", d.points);
+            SetTMP(go, "AcceptedDriverNameText", d.acceptedDriverName);
 
-            // ✅ 버튼 딥 탐색 (경로 문제 해결)
-            var acceptBtn = FindButtonAnyDeep(go.transform, "AcceptButton");
-            var pickupBtn = FindButtonAnyDeep(go.transform, "PickupButton");
-            var deliverBtn = FindButtonAnyDeep(go.transform, "DeliverButton", "DeliveredButton", "DeliveredtButton");
-            var routeBtn = FindButtonAnyDeep(go.transform, "RouteButton");
-            var addressBtn = FindButtonAnyDeep(go.transform, "AddressButton");
-            var cancelBtn = FindButtonAnyDeep(go.transform, "CancelButton");
+            var acceptBtn = FindButton(go, "AcceptButton");
+            var pickupBtn = FindButton(go, "PickupButton");
+            var deliverBtn = FindButton(go, "DeliverButton");
+            var routeBtn = FindButton(go, "RouteButton");
+            var cancelBtn = FindButton(go, "CancelButton");
 
-            // 등록 배달(available)에서만 수락 노출
+            // "등록 배달" 목록일 때만 수락 버튼 노출
             if (acceptBtn)
             {
-                bool canAccept = isAvailableList && (d.status ?? "").Trim() == "CREATED";
+                bool canAccept = isAvailableList && d.status == "CREATED";
                 acceptBtn.gameObject.SetActive(canAccept);
+
+                if (canAccept) SetButtonLabel(acceptBtn, "수락");
+
                 acceptBtn.onClick.RemoveAllListeners();
                 if (canAccept)
-                {
-                    SetButtonLabel(acceptBtn, "수락");
                     acceptBtn.onClick.AddListener(() => RequestClaimConfirm(d.deliveryId));
-                }
             }
 
             bool isMyList = !isAvailableList;
-            string st = (d.status ?? "").Trim();
 
-            SetActive(pickupBtn, isMyList && st == "ACCEPTED");
-            SetActive(deliverBtn, isMyList && st == "PICKED_UP");
+            SetActive(pickupBtn, isMyList && d.status == "ACCEPTED");
+            SetActive(deliverBtn, isMyList && d.status == "PICKED_UP");
+            SetActive(routeBtn, isMyList && (d.status == "ACCEPTED" || d.status == "PICKED_UP"));
 
-            // 내 배달: ACCEPTED / PICKED_UP 에서 길안내/주소복사/취소 활성
-            SetActive(routeBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
-            SetActive(addressBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
-            SetActive(cancelBtn, isMyList && (st == "ACCEPTED" || st == "PICKED_UP"));
+            bool canCancel = isMyList && (d.status == "ACCEPTED" || d.status == "PICKED_UP");
+            SetActive(cancelBtn, canCancel);
 
             if (pickupBtn)
             {
                 pickupBtn.onClick.RemoveAllListeners();
-                pickupBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "PICKED_UP")));
+                pickupBtn.onClick.AddListener(() => StartCoroutine(CoWrapLoading(CoUpdate(d.deliveryId, "PICKED_UP"))));
                 SetButtonLabel(pickupBtn, "픽업완료");
             }
 
             if (deliverBtn)
             {
                 deliverBtn.onClick.RemoveAllListeners();
-                deliverBtn.onClick.AddListener(() => StartCoroutine(CoUpdate(d.deliveryId, "DELIVERED")));
+                deliverBtn.onClick.AddListener(() => StartCoroutine(CoWrapLoading(CoUpdate(d.deliveryId, "DELIVERED"))));
                 SetButtonLabel(deliverBtn, "배달완료");
             }
 
@@ -336,25 +369,14 @@ public class DriverHomePanelController : MonoBehaviour
                     if (!naverMapLink) return;
                     naverMapLink.OpenRoute(d.lat, d.lng, d.address, d.customerName);
                 });
-                SetButtonLabel(routeBtn, "경로 버튼");
-            }
-
-            if (addressBtn)
-            {
-                addressBtn.onClick.RemoveAllListeners();
-                addressBtn.onClick.AddListener(() =>
-                {
-                    GUIUtility.systemCopyBuffer = d.address ?? "";
-                    Debug.Log($"[Address Copied] {GUIUtility.systemCopyBuffer}");
-                });
-                SetButtonLabel(addressBtn, "주소 복사");
+                SetButtonLabel(routeBtn, "길안내");
             }
 
             if (cancelBtn)
             {
                 cancelBtn.onClick.RemoveAllListeners();
                 cancelBtn.onClick.AddListener(() => RequestCancelConfirm(d.deliveryId));
-                SetButtonLabel(cancelBtn, "배달 취소");
+                SetButtonLabel(cancelBtn, "취소");
             }
         }
     }
@@ -366,11 +388,14 @@ public class DriverHomePanelController : MonoBehaviour
             choicePanel.Open(
                 "배차 수락",
                 "배차를 수락하시겠습니까?",
-                onYes: () => StartCoroutine(CoClaim(deliveryId)),
+                onYes: () => StartCoroutine(CoWrapLoading(CoClaim(deliveryId))),
                 onNo: null
             );
         }
-        else StartCoroutine(CoClaim(deliveryId));
+        else
+        {
+            StartCoroutine(CoWrapLoading(CoClaim(deliveryId)));
+        }
     }
 
     void RequestCancelConfirm(string deliveryId)
@@ -379,12 +404,15 @@ public class DriverHomePanelController : MonoBehaviour
         {
             choicePanel.Open(
                 "배달 취소",
-                "이 배달을 취소하시겠습니까?",
-                onYes: () => StartCoroutine(CoUpdate(deliveryId, "CANCELED")),
+                "이 배달을 취소하시겠습니까?\n(취소 시 다시 등록됨 상태로 돌아갑니다)",
+                onYes: () => StartCoroutine(CoWrapLoading(CoUpdate(deliveryId, "CANCELED"))),
                 onNo: null
             );
         }
-        else StartCoroutine(CoUpdate(deliveryId, "CANCELED"));
+        else
+        {
+            StartCoroutine(CoWrapLoading(CoUpdate(deliveryId, "CANCELED")));
+        }
     }
 
     IEnumerator CoClaim(string deliveryId)
@@ -413,7 +441,6 @@ public class DriverHomePanelController : MonoBehaviour
             Debug.LogWarning($"[UpdateStatus:{status}] FAIL: {resp?.msg}");
             yield break;
         }
-
         Refresh();
     }
 
@@ -444,8 +471,73 @@ public class DriverHomePanelController : MonoBehaviour
                 "", "",
                 r => resp = r
             );
+
             yield return new WaitForSeconds(heartbeatIntervalSec);
         }
+    }
+
+    // -----------------------
+    // Loading helpers
+    // -----------------------
+    IEnumerator CoWrapLoading(IEnumerator routine)
+    {
+        BeginLoading();
+        while (routine != null && routine.MoveNext())
+            yield return routine.Current;
+        EndLoading();
+    }
+
+    void BeginLoading()
+    {
+        _loadingRef = Mathf.Max(0, _loadingRef + 1);
+        if (_loadingRef == 1)
+        {
+            _loadingShownAt = Time.unscaledTime;
+            SetLoading(true);
+
+            if (loadingMaxTimeout > 0f)
+            {
+                if (_loadingTimeoutCo != null) StopCoroutine(_loadingTimeoutCo);
+                _loadingTimeoutCo = StartCoroutine(CoLoadingTimeout(loadingMaxTimeout));
+            }
+        }
+    }
+
+    void EndLoading()
+    {
+        _loadingRef = Mathf.Max(0, _loadingRef - 1);
+        if (_loadingRef == 0)
+        {
+            if (_loadingTimeoutCo != null)
+            {
+                StopCoroutine(_loadingTimeoutCo);
+                _loadingTimeoutCo = null;
+            }
+            StartCoroutine(CoHideLoadingMinDuration());
+        }
+    }
+
+    IEnumerator CoHideLoadingMinDuration()
+    {
+        float elapsed = Time.unscaledTime - _loadingShownAt;
+        float wait = Mathf.Max(0f, loadingMinDuration - elapsed);
+        if (wait > 0f) yield return new WaitForSecondsRealtime(wait);
+        SetLoading(false);
+    }
+
+    IEnumerator CoLoadingTimeout(float timeout)
+    {
+        yield return new WaitForSecondsRealtime(timeout);
+        Debug.LogWarning("[DriverHome] Loading timeout reached. Forcing hide.");
+        _loadingRef = 0;
+        SetLoading(false, force: true);
+    }
+
+    void SetLoading(bool on, bool force = false)
+    {
+        if (!loadingRoot) return;
+        if (!force && loadingRoot.activeSelf == on) return;
+        loadingRoot.SetActive(on);
     }
 
     // -----------------------
@@ -459,16 +551,21 @@ public class DriverHomePanelController : MonoBehaviour
             Destroy(t.GetChild(i).gameObject);
     }
 
+    static Button FindButton(GameObject root, string childName)
+    {
+        var tf = root.transform.Find(childName);
+        return tf ? tf.GetComponent<Button>() : null;
+    }
+
     static void SetActive(Button btn, bool active)
     {
         if (!btn) return;
         btn.gameObject.SetActive(active);
     }
 
-    static void SetTMP(GameObject root, string childName, string text)
+    static void SetTMP(GameObject root, string containerName, string text)
     {
-        // ✅ 이건 기존대로(직계) 두되, 필요하면 여기도 딥탐색으로 바꿔도 됨
-        var tf = root.transform.Find(childName);
+        var tf = root.transform.Find(containerName);
         if (!tf) return;
 
         TMP_Text tmp = tf.GetComponent<TMP_Text>();
@@ -497,28 +594,5 @@ public class DriverHomePanelController : MonoBehaviour
                 return;
             }
         }
-    }
-
-    // ✅ 핵심: 버튼 이름으로 "자식 전체"에서 찾기 (inactive 포함)
-    static Button FindButtonAnyDeep(Transform root, params string[] names)
-    {
-        if (!root || names == null || names.Length == 0) return null;
-
-        var all = root.GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < names.Length; i++)
-        {
-            string target = names[i];
-            if (string.IsNullOrEmpty(target)) continue;
-
-            for (int j = 0; j < all.Length; j++)
-            {
-                if (all[j].name == target)
-                {
-                    var btn = all[j].GetComponent<Button>();
-                    if (btn) return btn;
-                }
-            }
-        }
-        return null;
     }
 }

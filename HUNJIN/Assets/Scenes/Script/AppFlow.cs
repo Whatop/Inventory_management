@@ -7,20 +7,6 @@ public enum MainObjectMode
     Driver
 }
 
-/// <summary>
-/// 화면 전환(Flow) 전담.
-///
-/// Panels
-/// - MainScene: 버튼 선택
-/// - DeliveryListPanel: 관리자 배달 현황
-/// - DeliveryCreatePanel: 관리자 배달 등록
-/// - DriverHomePanel: 기사 화면
-/// - AllScene: (기존 재고/상품 전체 등) 인벤토리 계열 화면
-///
-/// Note
-/// - 외부 스크립트에서 호출 메서드명이 흔들리기 쉬워서
-///   ShowDeliveryList/ShowCreate/ShowDriver 같은 "별칭 메서드"를 함께 제공.
-/// </summary>
 public class AppFlow : MonoBehaviour
 {
     [Header("Panels")]
@@ -31,8 +17,9 @@ public class AppFlow : MonoBehaviour
     public GameObject allScene;
 
     [Header("Shared")]
-    public GameObject mainObject;    // 공용(스크롤/검색 등) 루트
-    public GameObject interactionUI; // 로딩/팝업 등 (선택)
+    [Tooltip("인벤토리/배달/기사 등 공용 루트(필요 시만 켜기)")]
+    public GameObject mainObject;
+    public GameObject interactionUI;
 
     [Header("MainObject Mode Groups (Optional)")]
     public GameObject inventoryModeRoot;
@@ -58,7 +45,6 @@ public class AppFlow : MonoBehaviour
 
     public void SetMainObjectMode(MainObjectMode mode)
     {
-        // mainObject는 항상 켜두는 방식 권장
         if (mainObject) mainObject.SetActive(true);
 
         if (inventoryModeRoot) inventoryModeRoot.SetActive(mode == MainObjectMode.Inventory);
@@ -66,19 +52,29 @@ public class AppFlow : MonoBehaviour
         if (driverModeRoot) driverModeRoot.SetActive(mode == MainObjectMode.Driver);
     }
 
-    // ------------------------------------------------------------------
-    // Canonical methods (외부에서 이 이름으로 호출하면 됨)
-    // ------------------------------------------------------------------
+    void SetMainObjectActive(bool on)
+    {
+        if (mainObject) mainObject.SetActive(on);
+        if (!on)
+        {
+            if (inventoryModeRoot) inventoryModeRoot.SetActive(false);
+            if (deliveryModeRoot) deliveryModeRoot.SetActive(false);
+            if (driverModeRoot) driverModeRoot.SetActive(false);
+        }
+    }
 
-    /// <summary>메인 선택 화면</summary>
+    // ----------------------------
+    // Canonical
+    // ----------------------------
     public void ShowMain()
     {
         HideAll();
         if (mainScene) mainScene.SetActive(true);
-        SetMainObjectMode(MainObjectMode.Inventory);
+
+        // 메인(선택) 화면에서는 공용 루트 숨김
+        SetMainObjectActive(false);
     }
 
-    /// <summary>AllScene(기존 재고/상품 전체 등)</summary>
     public void ShowAll()
     {
         HideAll();
@@ -86,7 +82,6 @@ public class AppFlow : MonoBehaviour
         SetMainObjectMode(MainObjectMode.Inventory);
     }
 
-    /// <summary>관리자: 배달 현황</summary>
     public void ShowDeliveryListAdmin()
     {
         HideAll();
@@ -94,7 +89,6 @@ public class AppFlow : MonoBehaviour
         SetMainObjectMode(MainObjectMode.DeliveryAdmin);
     }
 
-    /// <summary>관리자: 배달 등록</summary>
     public void ShowDeliveryCreate()
     {
         HideAll();
@@ -102,7 +96,6 @@ public class AppFlow : MonoBehaviour
         SetMainObjectMode(MainObjectMode.DeliveryAdmin);
     }
 
-    /// <summary>기사 홈</summary>
     public void ShowDriverHome()
     {
         HideAll();
@@ -110,16 +103,10 @@ public class AppFlow : MonoBehaviour
         SetMainObjectMode(MainObjectMode.Driver);
     }
 
-    // ------------------------------------------------------------------
-    // Aliases (다른 스크립트에서 헷갈리지 않게 별칭 제공)
-    // ------------------------------------------------------------------
-
-    /// <summary>별칭: 관리자 배달 현황</summary>
+    // ----------------------------
+    // Aliases
+    // ----------------------------
     public void ShowDeliveryList() => ShowDeliveryListAdmin();
-
-    /// <summary>별칭: 관리자 배달 등록</summary>
     public void ShowCreate() => ShowDeliveryCreate();
-
-    /// <summary>별칭: 기사 화면</summary>
     public void ShowDriver() => ShowDriverHome();
 }

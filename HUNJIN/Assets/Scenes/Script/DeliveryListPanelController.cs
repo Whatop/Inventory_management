@@ -165,7 +165,10 @@ public class DeliveryListPanelController : MonoBehaviour, IFilterTabController
     {
         StartCoroutine(CoRefreshFromServer());
     }
-
+    public void Refresh()
+    {
+        OnClickRefresh();
+    }
     private IEnumerator CoRefreshFromServer()
     {
         if (!service)
