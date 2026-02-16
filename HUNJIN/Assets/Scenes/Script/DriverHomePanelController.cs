@@ -286,10 +286,14 @@ public class DriverHomePanelController : MonoBehaviour
             bool byId = !string.IsNullOrEmpty(myId) && assignedId == myId;
             bool byName = !string.IsNullOrEmpty(myName) && acceptedName == myName;
             return byId || byName;
-        }).ToList();
+        })
+        // ✅ 추가: 배달완료는 내 목록에서 숨김
+        .Where(d => (d.status ?? "").Trim() != "DELIVERED")
+        .ToList();
 
         Render(rows, isAvailableList: false);
     }
+
 
     static string ToKoreanDeliveryStatus(string status)
     {
@@ -313,9 +317,12 @@ public class DriverHomePanelController : MonoBehaviour
         {
             var go = Instantiate(driverDeliveryItemPrefab, contentRoot);
 
+            // ✅ 상태는 반드시 Trim해서 비교에 사용
+            string status = (d.status ?? "").Trim();
+
             SetTMP(go, "CustomerNameText", d.customerName);
             SetTMP(go, "AddressText", d.address);
-            SetTMP(go, "StatusText", ToKoreanDeliveryStatus(d.status));
+            SetTMP(go, "StatusText", ToKoreanDeliveryStatus(status));
             SetTMP(go, "PointsText", d.points);
             SetTMP(go, "AcceptedDriverNameText", d.acceptedDriverName);
 
@@ -328,7 +335,7 @@ public class DriverHomePanelController : MonoBehaviour
             // "등록 배달" 목록일 때만 수락 버튼 노출
             if (acceptBtn)
             {
-                bool canAccept = isAvailableList && d.status == "CREATED";
+                bool canAccept = isAvailableList && status == "CREATED";
                 acceptBtn.gameObject.SetActive(canAccept);
 
                 if (canAccept) SetButtonLabel(acceptBtn, "수락");
@@ -340,11 +347,27 @@ public class DriverHomePanelController : MonoBehaviour
 
             bool isMyList = !isAvailableList;
 
-            SetActive(pickupBtn, isMyList && d.status == "ACCEPTED");
-            SetActive(deliverBtn, isMyList && d.status == "PICKED_UP");
-            SetActive(routeBtn, isMyList && (d.status == "ACCEPTED" || d.status == "PICKED_UP"));
+            // ✅ 겹쳐놨으니: 무조건 둘 다 끄고, 상태에 따라 하나만 켠다 (one-hot)
+            SetActive(pickupBtn, false);
+            SetActive(deliverBtn, false);
 
-            bool canCancel = isMyList && (d.status == "ACCEPTED" || d.status == "PICKED_UP");
+            if (isMyList)
+            {
+                if (status == "ACCEPTED")
+                {
+                    SetActive(pickupBtn, true);
+                }
+                else if (status == "PICKED_UP")
+                {
+                    SetActive(deliverBtn, true);
+                }
+            }
+
+            // 길안내: 내 목록 + (수락/픽업)에서만
+            SetActive(routeBtn, isMyList && (status == "ACCEPTED" || status == "PICKED_UP"));
+
+            // 취소: 내 목록 + (수락/픽업)에서만
+            bool canCancel = isMyList && (status == "ACCEPTED" || status == "PICKED_UP");
             SetActive(cancelBtn, canCancel);
 
             if (pickupBtn)
@@ -551,11 +574,30 @@ public class DriverHomePanelController : MonoBehaviour
             Destroy(t.GetChild(i).gameObject);
     }
 
-    static Button FindButton(GameObject root, string childName)
+    Button FindButton(GameObject root, string childName)
     {
+        if (!root) return null;
+
+        // 1) 기존처럼 바로 아래(1단계) 먼저 시도
         var tf = root.transform.Find(childName);
-        return tf ? tf.GetComponent<Button>() : null;
+        if (tf)
+        {
+            var b = tf.GetComponent<Button>();
+            if (b) return b;
+        }
+
+        // 2) 하위 전체에서 이름으로 검색 (프리팹 구조가 "Buttons/PickupButton"이어도 OK)
+        var all = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i].name != childName) continue;
+            var b = all[i].GetComponent<Button>();
+            if (b) return b;
+        }
+
+        return null;
     }
+
 
     static void SetActive(Button btn, bool active)
     {

@@ -289,6 +289,8 @@ public class DeliveryListPanelController : MonoBehaviour, IFilterTabController
             {
                 assignBtn.onClick.AddListener(() =>
                 {
+                    choice.gameObject.SetActive(true);
+                    choice.transform.SetAsLastSibling();
                     if (choice)
                     {
                         choice.Open(

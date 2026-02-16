@@ -1,7 +1,6 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
-    - AllSceneController
     - AppFlow
     - ChoicePanelController
     - DeliveryCreatePanelController
@@ -298,8 +297,6 @@ ScriptsOnlyBuild:
       Script: {instanceID: 19212}
     - Class: 114
       Script: {instanceID: 19252}
-    - Class: 114
-      Script: {instanceID: 19316}
     - Class: 114
       Script: {instanceID: 19436}
     - Class: 114
